@@ -8,12 +8,16 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,17 +29,46 @@ import static com.busybee.autopickup.AutoPickupPlugin.LOGGER;
 
 public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlockEvent> {
 
-    private static class BreakEntry {
-        final String blockId;
-        final long timestamp;
+    public static class BreakEntry {
+        private final UUID playerUUID;
+        private final String blockId;
+        private final long timestamp;
+        private final boolean mobDrop;
 
-        BreakEntry(String blockId) {
+        BreakEntry(UUID playerUUID, String blockId) {
+            this(playerUUID, blockId, false);
+        }
+
+        BreakEntry(UUID playerUUID, String blockId, boolean mobDrop) {
+            this.playerUUID = playerUUID;
             this.blockId = blockId;
             this.timestamp = System.currentTimeMillis();
+            this.mobDrop = mobDrop;
+        }
+
+        public UUID getPlayerUUID() {
+            return playerUUID;
+        }
+
+        public String getBlockId() {
+            return blockId;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public boolean isMobDrop() {
+            return mobDrop;
+        }
+
+        @Nullable
+        public PlayerRef getPlayerRef() {
+            return Universe.get().getPlayer(playerUUID);
         }
     }
 
-    private final Map<UUID, BreakEntry> recentBreaks = new ConcurrentHashMap<>();
+    private final Map<Vector3i, BreakEntry> recentBreaks = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public BreakBlockHandler() {
@@ -61,9 +94,14 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
 
         UUID playerUUID = uuidComponent.getUuid();
         String blockId = event.getBlockType().getId();
+        Vector3i blockPos = event.getTargetBlock();
 
-        LOGGER.atInfo().log("BreakBlockEvent - Player: " + playerUUID + ", Block: " + blockId);
-        recentBreaks.put(playerUUID, new BreakEntry(blockId));
+        if (blockPos == null) {
+            return;
+        }
+
+        LOGGER.atInfo().log("BreakBlockEvent - Player: " + playerUUID + ", Block: " + blockId + ", Position: " + blockPos);
+        recentBreaks.put(blockPos, new BreakEntry(playerUUID, blockId));
     }
 
     @Nonnull
@@ -72,22 +110,23 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         return Archetype.of(Player.getComponentType());
     }
 
-    public String getRecentBreak(UUID playerUUID) {
-        BreakEntry entry = recentBreaks.get(playerUUID);
+    @Nullable
+    public BreakEntry getRecentBreak(Vector3i position) {
+        BreakEntry entry = recentBreaks.get(position);
         if (entry != null) {
-            // Check if entry is still valid (within 500ms as configured)
+            // Check if entry is still valid (within configured time)
             long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
             if (System.currentTimeMillis() - entry.timestamp <= expiryTime) {
-                return entry.blockId;
+                return entry;
             }
         }
         return null;
     }
 
-    public void markMobDeath(UUID playerUUID) {
-        // Mark as a special "mob_drop" entry that always passes whitelist/blacklist checks
-        recentBreaks.put(playerUUID, new BreakEntry("MOB_DROP"));
-        LOGGER.atInfo().log("Marked mob death for player: " + playerUUID);
+    public void markMobDeath(Vector3i position, UUID playerUUID) {
+        // Mark as a special mob_drop entry that bypasses whitelist/blacklist checks
+        recentBreaks.put(position, new BreakEntry(playerUUID, "MOB_DROP", true));
+        LOGGER.atInfo().log("Marked mob death at position: " + position + " for player: " + playerUUID);
     }
 
     private void cleanupOldEntries() {

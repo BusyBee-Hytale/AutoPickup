@@ -5,6 +5,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -94,15 +95,21 @@ public class MobDropListener extends DeathSystems.OnDeathSystem {
             return;
         }
 
-        // Get mob position for logging
+        // Get mob position for marking
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
-        if (transform != null) {
-            LOGGER.atInfo().log("MobDropListener - NPC death at " + transform.getPosition() + ", killed by player: " + killerUUID);
-        } else {
-            LOGGER.atInfo().log("MobDropListener - NPC death, killed by player: " + killerUUID);
+        if (transform == null) {
+            return;
         }
 
-        // Mark this as a "mob_drop" so items from this mob will be auto-picked up
-        breakBlockHandler.markMobDeath(killerUUID);
+        Vector3i mobPos = new Vector3i(
+                (int) Math.floor(transform.getPosition().x),
+                (int) Math.floor(transform.getPosition().y),
+                (int) Math.floor(transform.getPosition().z)
+        );
+
+        LOGGER.atInfo().log("MobDropListener - NPC death at " + mobPos + ", killed by player: " + killerUUID);
+
+        // Mark this position as a mob_drop so items from this mob will be auto-picked up
+        breakBlockHandler.markMobDeath(mobPos, killerUUID);
     }
 }

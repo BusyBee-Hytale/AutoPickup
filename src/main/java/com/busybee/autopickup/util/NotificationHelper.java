@@ -60,29 +60,35 @@ public class NotificationHelper {
 
     public static void sendToggleNotification(PlayerRef playerRef, String notificationType, String title, String subtitle) {
         try {
+            boolean isEnabled = title.contains("Enabled");
+            String cleanTitle = extractText(title);
+            String cleanSubtitle = extractText(subtitle);
+            String titleColor = extractColor(title);
+
             switch (notificationType.toUpperCase()) {
                 case "TITLE":
                     Titles.player(
                         playerRef,
-                        Message.raw("Auto Pickup").color(extractColor(title)),
-                        Message.raw(extractText(subtitle)).color("#ffffff"),
-                        true
+                        ChatUtil.parse(title),
+                        ChatUtil.parse(subtitle),
+                        false
                     );
                     break;
 
                 case "NOTIFICATION":
-                    boolean isEnabled = title.contains("Enabled");
                     Notifications.player(
                             playerRef,
-                            Message.raw("Auto Pickup").color(extractColor(title)),
-                            Message.raw(extractText(subtitle)).color("#ffffff"),
+                            ChatUtil.parse(title),
+                            ChatUtil.parse(subtitle),
                             null,
                             isEnabled ? NotificationStyle.Success : NotificationStyle.Warning
                     );
                     break;
 
                 case "CHAT":
-                    Messenger.sendMessage(playerRef, title + " - " + subtitle);
+                    AutoPickupPlugin plugin = AutoPickupPlugin.getInstance();
+                    String prefix = plugin.getMessages().getString("chat.prefix", "<color:#22c55e>[AutoPickup]");
+                    Messenger.sendMessage(playerRef, prefix + " " + title);
                     break;
 
                 case "NONE":
@@ -90,6 +96,7 @@ public class NotificationHelper {
                     break;
             }
         } catch (Exception e) {
+            AutoPickupPlugin.LOGGER.atWarning().log("Failed to send toggle notification: " + e.getMessage());
             // Fallback to chat message if notification fails
             Messenger.sendMessage(playerRef, ChatUtil.parse(title) + " " + ChatUtil.parse(subtitle));
         }
