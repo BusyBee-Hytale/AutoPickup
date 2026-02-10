@@ -18,6 +18,7 @@ public class AutoPickupPlugin extends JavaPlugin {
     private static AutoPickupPlugin instance;
 
     private YamlConfig config;
+    private YamlConfig messages;
     private PlayerDataManager playerDataManager;
     private BreakBlockHandler breakBlockHandler;
 
@@ -36,6 +37,7 @@ public class AutoPickupPlugin extends JavaPlugin {
 
         YamlConfig.init(this);
         this.config = new YamlConfig("config.yml");
+        this.messages = new YamlConfig("messages.yml");
 
         this.playerDataManager = new PlayerDataManager(this);
 
@@ -64,9 +66,15 @@ public class AutoPickupPlugin extends JavaPlugin {
     public YamlConfig getConfig() {
         return config;
     }
+
+    public YamlConfig getMessages() {
+        return messages;
+    }
+
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
     }
+
     public BreakBlockHandler getBreakBlockHandler() {
         return breakBlockHandler;
     }

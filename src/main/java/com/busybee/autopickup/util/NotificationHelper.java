@@ -4,6 +4,8 @@ import ai.kodari.hylib.commons.message.Messenger;
 import ai.kodari.hylib.commons.util.ChatUtil;
 import ai.kodari.hylib.commons.util.Notifications;
 import ai.kodari.hylib.commons.util.Titles;
+import ai.kodari.hylib.config.YamlConfig;
+import com.busybee.autopickup.AutoPickupPlugin;
 import com.hypixel.hytale.protocol.packets.interface_.NotificationStyle;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -12,17 +14,22 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 public class NotificationHelper {
 
     public static void sendPickupNotification(PlayerRef playerRef, String notificationType, ItemStack itemStack) {
+        AutoPickupPlugin plugin = AutoPickupPlugin.getInstance();
+        YamlConfig messages = plugin.getMessages();
+
         String itemName = itemStack.getItemId();
         int quantity = itemStack.getQuantity();
 
-        String message = "+" + quantity + " " + itemName;
+        String pickupMessage = messages.getString("notifications.pickup-message", "<white>+{quantity} {item}")
+                .replace("{quantity}", String.valueOf(quantity))
+                .replace("{item}", itemName);
 
         switch (notificationType.toUpperCase()) {
             case "NOTIFICATION":
                 Notifications.player(
                         playerRef,
-                        ChatUtil.parse("<color:#22c55e>Item Picked Up"),
-                        ChatUtil.parse("<white>" + message),
+                        ChatUtil.parse(messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up")),
+                        ChatUtil.parse(pickupMessage),
                         null,
                         NotificationStyle.Success
                 );
@@ -38,7 +45,11 @@ public class NotificationHelper {
                 break;
 
             case "CHAT":
-                Messenger.sendMessage(playerRef, "<color:#22c55e>[AutoPickup] <white>" + message);
+                String chatMessage = messages.getString("chat.pickup", "{prefix} <white>+{quantity} {item}")
+                        .replace("{prefix}", messages.getString("chat.prefix", "<color:#22c55e>[AutoPickup]"))
+                        .replace("{quantity}", String.valueOf(quantity))
+                        .replace("{item}", itemName);
+                Messenger.sendMessage(playerRef, chatMessage);
                 break;
 
             case "NONE":

@@ -47,6 +47,49 @@ $Common.@PageOverlay {
                 }
             }
             
+            Group {
+                LayoutMode: Top;
+                Background: #1a1a2e;
+                OutlineColor: #93844c(0.3);
+                OutlineSize: 1;
+                Padding: (Full: 16);
+                Anchor: (Bottom: 16);
+                
+                Group {
+                    LayoutMode: Left;
+                    Anchor: (Bottom: 8);
+                    
+                    Label {
+                        Style: (FontSize: 12, TextColor: #64748b, RenderUppercase: true);
+                        Text: "Pickup Radius";
+                        FlexWeight: 1;
+                    }
+                    
+                    Label #RadiusLabel {
+                        Style: (FontSize: 14, TextColor: #ffaa00, RenderBold: true);
+                        Text: "5";
+                    }
+                    
+                    Label {
+                        Style: (FontSize: 14, TextColor: #64748b);
+                        Text: " blocks";
+                    }
+                }
+                
+                Slider #RadiusSlider {
+                    Style: $Common.@DefaultSliderStyle;
+                    Min: 0;
+                    Max: 10;
+                    Value: 5;
+                }
+                
+                Label {
+                    Style: (FontSize: 11, TextColor: #64748b, HorizontalAlignment: Center);
+                    Text: "How far away items can be to get auto-picked up";
+                    Anchor: (Top: 6);
+                }
+            }
+            
             $Common.@PanelTitle {
                 @Text = "Notification Settings";
                 Anchor: (Bottom: 12);

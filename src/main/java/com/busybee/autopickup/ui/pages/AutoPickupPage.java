@@ -24,11 +24,13 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
 
     private final AutoPickupPlugin plugin;
     private boolean isEnabled;
+    private int radiusValue;
 
     public AutoPickupPage(@Nonnull PlayerRef playerRef, AutoPickupPlugin plugin) {
         super(playerRef, CustomPageLifetime.CanDismiss, AutoPickupPageData.CODEC);
         this.plugin = plugin;
         this.isEnabled = plugin.getPlayerDataManager().isAutoPickupEnabled(playerRef.getUuid());
+        this.radiusValue = plugin.getPlayerDataManager().getRadius(playerRef.getUuid());
     }
 
     @Override
@@ -46,9 +48,11 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
     private void setupValues(UICommandBuilder cmd) {
         cmd.set("#StatusLabel.TextSpans",
                 this.isEnabled
-                        ? Message.raw("ENABLED").color("#22c55e")
-                        : Message.raw("DISABLED").color("#ef4444")
+                        ? ChatUtil.parse(plugin.getMessages().getString("ui.status-enabled", "<color:#22c55e>ENABLED"))
+                        : ChatUtil.parse(plugin.getMessages().getString("ui.status-disabled", "<color:#ef4444>DISABLED"))
         );
+
+        cmd.set("#RadiusLabel.Text", String.valueOf(this.radiusValue));
 
         String toggleNotifType = plugin.getConfig().getString("autopickup.toggle-notification-type", "TITLE");
         cmd.set("#ToggleNotifType.Text", toggleNotifType.toUpperCase());
@@ -71,6 +75,13 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
                 EventData.of("Button", "Toggle"),
                 false
         );
+
+        events.addEventBinding(
+                CustomUIEventBindingType.ValueChanged,
+                "#RadiusSlider",
+                EventData.of("Button", "RadiusChanged").append("@Radius", "#RadiusSlider.Value"),
+                false
+        );
     }
 
     @Override
@@ -82,6 +93,11 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
         super.handleDataEvent(ref, store, data);
         Player player = store.getComponent(ref, Player.getComponentType());
         if (player == null) return;
+
+        if (data.getRadius() != null) {
+            this.radiusValue = Math.round(data.getRadius());
+            plugin.getPlayerDataManager().setRadius(this.playerRef.getUuid(), this.radiusValue);
+        }
 
         if (data.getButton() != null) {
             switch (data.getButton()) {
@@ -99,19 +115,23 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
                         NotificationHelper.sendToggleNotification(
                                 this.playerRef,
                                 notificationType,
-                                ChatUtil.parse("<color:#22c55e>AutoPickup Enabled"),
-                                ChatUtil.parse("<white>Items will be automatically picked up")
+                                ChatUtil.parse(plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled")),
+                                ChatUtil.parse(plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up"))
                         );
                     } else {
                         NotificationHelper.sendToggleNotification(
                                 this.playerRef,
                                 notificationType,
-                                ChatUtil.parse("<color:#ff0000>AutoPickup Disabled"),
-                                ChatUtil.parse("<white>Items will drop normally")
+                                ChatUtil.parse(plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled")),
+                                ChatUtil.parse(plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally"))
                         );
                     }
 
                     this.updateStatus();
+                    return;
+                }
+                case "RadiusChanged" -> {
+                    this.updateRadiusLabel();
                     return;
                 }
             }
@@ -124,9 +144,18 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
         UICommandBuilder cmd = new UICommandBuilder();
         cmd.set("#StatusLabel.TextSpans",
                 this.isEnabled
-                        ? Message.raw("ENABLED").color("#22c55e")
-                        : Message.raw("DISABLED").color("#ef4444")
+                        ? ChatUtil.parse(plugin.getMessages().getString("ui.status-enabled", "<color:#22c55e>ENABLED"))
+                        : ChatUtil.parse(plugin.getMessages().getString("ui.status-disabled", "<color:#ef4444>DISABLED"))
         );
+
+        UIEventBuilder events = new UIEventBuilder();
+        this.bindEvents(events);
+        this.sendUpdate(cmd, events, false);
+    }
+
+    private void updateRadiusLabel() {
+        UICommandBuilder cmd = new UICommandBuilder();
+        cmd.set("#RadiusLabel.Text", String.valueOf(this.radiusValue));
 
         UIEventBuilder events = new UIEventBuilder();
         this.bindEvents(events);
