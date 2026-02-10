@@ -1,8 +1,0 @@
-com\busybee\autopickup\ui\pages\AutoPickupPage.class
-com\busybee\autopickup\manager\PlayerDataManager.class
-com\busybee\autopickup\ui\data\AutoPickupPageData.class
-com\busybee\autopickup\commands\AutoPickupCommand.class
-com\busybee\autopickup\AutoPickupPlugin.class
-com\busybee\autopickup\systems\DropItemHandler.class
-com\busybee\autopickup\systems\BreakBlockHandler.class
-com\busybee\autopickup\util\NotificationHelper.class
