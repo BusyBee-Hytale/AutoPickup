@@ -90,7 +90,7 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
     }
 
     private boolean isCreativeMode(Player player) {
-        return false;
+        return player.getGameMode() == com.hypixel.hytale.protocol.GameMode.Creative;
     }
 
     private void performPickup(World world, PlayerRef playerRef, Ref<EntityStore> ref, ItemStack itemStack) {

@@ -64,7 +64,7 @@ public class NotificationHelper {
                 break;
 
             case "CHAT":
-                Messenger.sendMessage(playerRef, Message.join(title, Message.raw(" - "), subtitle));
+                Messenger.sendMessage(playerRef, Message.join(title, Message.raw(" - "), subtitle).toString());
                 break;
 
             case "NONE":
