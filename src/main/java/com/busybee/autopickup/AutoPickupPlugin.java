@@ -52,9 +52,9 @@ public class AutoPickupPlugin extends JavaPlugin {
         getEntityStoreRegistry().registerSystem(new MobDropListener(breakBlockHandler));
 
         AutoPickupCommand mainCommand = new AutoPickupCommand(this);
+        mainCommand.addSubCommand(new AutoPickupCommand.ReloadSubCommand(this));
+        mainCommand.addSubCommand(new AutoPickupCommand.SettingsSubCommand(this));
         getCommandRegistry().registerCommand(mainCommand);
-        getCommandRegistry().registerCommand(new AutoPickupCommand.ReloadSubCommand(this));
-        getCommandRegistry().registerCommand(new AutoPickupCommand.SettingsSubCommand(this));
 
         LOGGER.atInfo().log("AutoPickup plugin setup complete!");
     }
