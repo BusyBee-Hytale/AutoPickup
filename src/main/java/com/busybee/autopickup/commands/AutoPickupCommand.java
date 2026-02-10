@@ -8,9 +8,7 @@ import com.busybee.autopickup.ui.pages.AutoPickupPage;
 import com.busybee.autopickup.util.NotificationHelper;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.basecommands.AbstractCommandCollection;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
@@ -20,68 +18,61 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
 
-public class AutoPickupCommand extends AbstractCommandCollection {
+public class AutoPickupCommand extends AbstractPlayerCommand {
+
+    private final AutoPickupPlugin plugin;
 
     public AutoPickupCommand(AutoPickupPlugin plugin) {
         super("autopickup", "Toggle AutoPickup or manage settings");
-        addSubCommand((AbstractCommand) new ReloadSubCommand(plugin));
-        addSubCommand((AbstractCommand) new SettingsSubCommand(plugin));
+        this.plugin = plugin;
     }
 
     @Override
-    protected void execute(@Nonnull CommandContext ctx) {
-    }
+    protected void execute(
+            @Nonnull CommandContext ctx,
+            @Nonnull Store<EntityStore> store,
+            @Nonnull Ref<EntityStore> ref,
+            @Nonnull PlayerRef playerRef,
+            @Nonnull World world
+    ) {
+        if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
+            Titles.player(
+                playerRef,
+                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled")),
+                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")),
+                false
+            );
+            return;
+        }
 
-    @Override
-    protected void executeDefault(@Nonnull CommandContext ctx) {
-        if (ctx.sender() instanceof Player player) {
-            Ref<EntityStore> ref = player.getReference();
-            if (ref == null || !ref.isValid()) return;
-            Store<EntityStore> store = ref.getStore();
-            PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-            if (playerRef == null) return;
+        boolean currentStatus = plugin.getPlayerDataManager().isAutoPickupEnabled(playerRef.getUuid());
+        boolean newStatus = !currentStatus;
+        plugin.getPlayerDataManager().setAutoPickupEnabled(playerRef.getUuid(), newStatus);
 
-            AutoPickupPlugin plugin = AutoPickupPlugin.getInstance();
+        String notificationType = plugin.getConfig().getString("autopickup.toggle-notification-type", "TITLE");
 
-            if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
-                Titles.player(
-                    playerRef,
-                    ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled")),
-                    ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")),
-                    false
-                );
-                return;
-            }
-
-            boolean currentStatus = plugin.getPlayerDataManager().isAutoPickupEnabled(playerRef.getUuid());
-            boolean newStatus = !currentStatus;
-            plugin.getPlayerDataManager().setAutoPickupEnabled(playerRef.getUuid(), newStatus);
-
-            String notificationType = plugin.getConfig().getString("autopickup.toggle-notification-type", "TITLE");
-
-            if (newStatus) {
-                NotificationHelper.sendToggleNotification(
-                    playerRef,
-                    notificationType,
-                    plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled"),
-                    plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up")
-                );
-            } else {
-                NotificationHelper.sendToggleNotification(
-                    playerRef,
-                    notificationType,
-                    plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled"),
-                    plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally")
-                );
-            }
+        if (newStatus) {
+            NotificationHelper.sendToggleNotification(
+                playerRef,
+                notificationType,
+                plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled"),
+                plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up")
+            );
+        } else {
+            NotificationHelper.sendToggleNotification(
+                playerRef,
+                notificationType,
+                plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled"),
+                plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally")
+            );
         }
     }
 
-    static class ReloadSubCommand extends AbstractPlayerCommand {
+    public static class ReloadSubCommand extends AbstractPlayerCommand {
 
         private final AutoPickupPlugin plugin;
 
-        ReloadSubCommand(AutoPickupPlugin plugin) {
+        public ReloadSubCommand(AutoPickupPlugin plugin) {
             super("reload", "Reload configuration files");
             this.plugin = plugin;
         }
@@ -107,11 +98,11 @@ public class AutoPickupCommand extends AbstractCommandCollection {
         }
     }
 
-    static class SettingsSubCommand extends AbstractPlayerCommand {
+    public static class SettingsSubCommand extends AbstractPlayerCommand {
 
         private final AutoPickupPlugin plugin;
 
-        SettingsSubCommand(AutoPickupPlugin plugin) {
+        public SettingsSubCommand(AutoPickupPlugin plugin) {
             super("settings", "Open AutoPickup settings UI");
             this.plugin = plugin;
         }

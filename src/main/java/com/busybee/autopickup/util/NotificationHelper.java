@@ -7,6 +7,7 @@ import ai.kodari.hylib.commons.util.Titles;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.hypixel.hytale.protocol.packets.interface_.NotificationStyle;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 
@@ -58,28 +59,57 @@ public class NotificationHelper {
     }
 
     public static void sendToggleNotification(PlayerRef playerRef, String notificationType, String title, String subtitle) {
-        switch (notificationType.toUpperCase()) {
-            case "TITLE":
-                Titles.player(playerRef, ChatUtil.parse(title), ChatUtil.parse(subtitle), true);
-                break;
-
-            case "NOTIFICATION":
-                Notifications.player(
+        try {
+            switch (notificationType.toUpperCase()) {
+                case "TITLE":
+                    Titles.player(
                         playerRef,
-                        ChatUtil.parse(title),
-                        ChatUtil.parse(subtitle),
-                        null,
-                        NotificationStyle.Success
-                );
-                break;
+                        Message.raw("Auto Pickup").color(extractColor(title)),
+                        Message.raw(extractText(subtitle)).color("#ffffff"),
+                        true
+                    );
+                    break;
 
-            case "CHAT":
-                Messenger.sendMessage(playerRef, title + " - " + subtitle);
-                break;
+                case "NOTIFICATION":
+                    boolean isEnabled = title.contains("Enabled");
+                    Notifications.player(
+                            playerRef,
+                            Message.raw("Auto Pickup").color(extractColor(title)),
+                            Message.raw(extractText(subtitle)).color("#ffffff"),
+                            null,
+                            isEnabled ? NotificationStyle.Success : NotificationStyle.Warning
+                    );
+                    break;
 
-            case "NONE":
-            default:
-                break;
+                case "CHAT":
+                    Messenger.sendMessage(playerRef, title + " - " + subtitle);
+                    break;
+
+                case "NONE":
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            // Fallback to chat message if notification fails
+            Messenger.sendMessage(playerRef, ChatUtil.parse(title) + " " + ChatUtil.parse(subtitle));
         }
+    }
+
+    private static String extractColor(String coloredText) {
+        // Extract hex color from format like "<color:#22c55e>AutoPickup Enabled"
+        if (coloredText.contains("<color:#")) {
+            int start = coloredText.indexOf("#");
+            int end = coloredText.indexOf(">", start);
+            if (start != -1 && end != -1) {
+                return coloredText.substring(start, end);
+            }
+        }
+        return "#ffffff"; // default white
+    }
+
+    private static String extractText(String coloredText) {
+        // Remove color tags from format like "<color:#22c55e>Text" or "<white>Text"
+        String text = coloredText.replaceAll("<color:[^>]+>", "").replaceAll("<[^>]+>", "");
+        return text.trim();
     }
 }

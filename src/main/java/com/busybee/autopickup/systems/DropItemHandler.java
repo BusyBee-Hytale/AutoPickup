@@ -73,10 +73,14 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
             }
         }
 
-        String brokenBlock = plugin.getBreakBlockHandler().getAndClearRecentBreak(playerUUID);
+        String brokenBlock = plugin.getBreakBlockHandler().getRecentBreak(playerUUID);
 
-        if (brokenBlock != null && !shouldPickup(brokenBlock)) {
-            return;
+        // If there's a recent break/kill, check if we should pick it up
+        if (brokenBlock != null) {
+            // MOB_DROP always gets picked up (bypass whitelist/blacklist)
+            if (!brokenBlock.equals("MOB_DROP") && !shouldPickup(brokenBlock)) {
+                return;
+            }
         }
 
         ItemStack itemStack = event.getItemStack();

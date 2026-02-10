@@ -17,15 +17,31 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.busybee.autopickup.AutoPickupPlugin.LOGGER;
 
 public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlockEvent> {
 
-    private final Map<UUID, String> recentBreaks = new ConcurrentHashMap<>();
+    private static class BreakEntry {
+        final String blockId;
+        final long timestamp;
+
+        BreakEntry(String blockId) {
+            this.blockId = blockId;
+            this.timestamp = System.currentTimeMillis();
+        }
+    }
+
+    private final Map<UUID, BreakEntry> recentBreaks = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public BreakBlockHandler() {
         super(BreakBlockEvent.class);
+        // Clean up old entries every second
+        scheduler.scheduleAtFixedRate(this::cleanupOldEntries, 1, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -47,7 +63,7 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         String blockId = event.getBlockType().getId();
 
         LOGGER.atInfo().log("BreakBlockEvent - Player: " + playerUUID + ", Block: " + blockId);
-        recentBreaks.put(playerUUID, blockId);
+        recentBreaks.put(playerUUID, new BreakEntry(blockId));
     }
 
     @Nonnull
@@ -56,7 +72,38 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         return Archetype.of(Player.getComponentType());
     }
 
-    public String getAndClearRecentBreak(UUID playerUUID) {
-        return recentBreaks.remove(playerUUID);
+    public String getRecentBreak(UUID playerUUID) {
+        BreakEntry entry = recentBreaks.get(playerUUID);
+        if (entry != null) {
+            // Check if entry is still valid (within 500ms as configured)
+            long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
+            if (System.currentTimeMillis() - entry.timestamp <= expiryTime) {
+                return entry.blockId;
+            }
+        }
+        return null;
+    }
+
+    public void markMobDeath(UUID playerUUID) {
+        // Mark as a special "mob_drop" entry that always passes whitelist/blacklist checks
+        recentBreaks.put(playerUUID, new BreakEntry("MOB_DROP"));
+        LOGGER.atInfo().log("Marked mob death for player: " + playerUUID);
+    }
+
+    private void cleanupOldEntries() {
+        long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
+        long now = System.currentTimeMillis();
+        recentBreaks.entrySet().removeIf(entry -> (now - entry.getValue().timestamp) > expiryTime);
+    }
+
+    public void shutdown() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.busybee.autopickup.database.DatabaseManager;
 import com.busybee.autopickup.manager.PlayerDataManager;
 import com.busybee.autopickup.systems.BreakBlockHandler;
 import com.busybee.autopickup.systems.DropItemHandler;
+import com.busybee.autopickup.systems.MobDropListener;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
@@ -48,8 +49,12 @@ public class AutoPickupPlugin extends JavaPlugin {
 
         getEntityStoreRegistry().registerSystem(breakBlockHandler);
         getEntityStoreRegistry().registerSystem(new DropItemHandler(this));
+        getEntityStoreRegistry().registerSystem(new MobDropListener(breakBlockHandler));
 
-        getCommandRegistry().registerCommand(new AutoPickupCommand(this));
+        AutoPickupCommand mainCommand = new AutoPickupCommand(this);
+        getCommandRegistry().registerCommand(mainCommand);
+        getCommandRegistry().registerCommand(new AutoPickupCommand.ReloadSubCommand(this));
+        getCommandRegistry().registerCommand(new AutoPickupCommand.SettingsSubCommand(this));
 
         LOGGER.atInfo().log("AutoPickup plugin setup complete!");
     }
@@ -69,6 +74,10 @@ public class AutoPickupPlugin extends JavaPlugin {
 
         if (databaseManager != null) {
             databaseManager.close();
+        }
+
+        if (breakBlockHandler != null) {
+            breakBlockHandler.shutdown();
         }
 
         Scheduler.shutdown();
