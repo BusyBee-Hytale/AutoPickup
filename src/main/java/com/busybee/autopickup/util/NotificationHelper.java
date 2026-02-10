@@ -7,7 +7,6 @@ import ai.kodari.hylib.commons.util.Titles;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.hypixel.hytale.protocol.packets.interface_.NotificationStyle;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 
@@ -28,8 +27,8 @@ public class NotificationHelper {
             case "NOTIFICATION":
                 Notifications.player(
                         playerRef,
-                        messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up"),
-                        pickupMessage,
+                        ChatUtil.parse(messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up")),
+                        ChatUtil.parse(pickupMessage),
                         null,
                         NotificationStyle.Success
                 );
@@ -38,8 +37,8 @@ public class NotificationHelper {
             case "TITLE":
                 Titles.player(
                         playerRef,
-                        "<color:#22c55e>+" + quantity,
-                        "<white>" + itemName,
+                        ChatUtil.parse("<color:#22c55e>+" + quantity),
+                        ChatUtil.parse("<white>" + itemName),
                         false
                 );
                 break;
@@ -59,28 +58,23 @@ public class NotificationHelper {
     }
 
     public static void sendToggleNotification(PlayerRef playerRef, String notificationType, String title, String subtitle) {
-        AutoPickupPlugin.LOGGER.atInfo().log("Sending toggle notification - Type: " + notificationType);
-
         switch (notificationType.toUpperCase()) {
             case "TITLE":
-                Titles.player(playerRef, title, subtitle, true);
-                AutoPickupPlugin.LOGGER.atInfo().log("Sent TITLE notification to player: " + playerRef.getUuid());
+                Titles.player(playerRef, ChatUtil.parse(title), ChatUtil.parse(subtitle), true);
                 break;
 
             case "NOTIFICATION":
                 Notifications.player(
                         playerRef,
-                        title,
-                        subtitle,
+                        ChatUtil.parse(title),
+                        ChatUtil.parse(subtitle),
                         null,
                         NotificationStyle.Success
                 );
-                AutoPickupPlugin.LOGGER.atInfo().log("Sent NOTIFICATION to player: " + playerRef.getUuid());
                 break;
 
             case "CHAT":
                 Messenger.sendMessage(playerRef, title + " - " + subtitle);
-                AutoPickupPlugin.LOGGER.atInfo().log("Sent CHAT message to player: " + playerRef.getUuid());
                 break;
 
             case "NONE":

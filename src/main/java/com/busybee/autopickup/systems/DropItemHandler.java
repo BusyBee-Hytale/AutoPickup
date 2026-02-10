@@ -1,6 +1,5 @@
 package com.busybee.autopickup.systems;
 
-import ai.kodari.hylib.commons.scheduler.Scheduler;
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.busybee.autopickup.util.NotificationHelper;
 import com.hypixel.hytale.component.Archetype;
@@ -17,7 +16,6 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
-import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -64,9 +62,13 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
             return;
         }
 
+        Player player = store.getComponent(ref, Player.getComponentType());
+        if (player == null) {
+            return;
+        }
+
         if (plugin.getConfig().getBoolean("autopickup.disable-in-creative", true)) {
-            Player player = store.getComponent(ref, Player.getComponentType());
-            if (player != null && isCreativeMode(player)) {
+            if (player.getGameMode() == com.hypixel.hytale.protocol.GameMode.Creative) {
                 return;
             }
         }
@@ -77,47 +79,24 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
             return;
         }
 
-        LOGGER.atInfo().log("AutoPickup triggered for player " + playerUUID + ", item: " + event.getItemStack().getItemId() + " x" + event.getItemStack().getQuantity());
+        ItemStack itemStack = event.getItemStack();
+        if (ItemStack.isEmpty(itemStack)) {
+            return;
+        }
 
-        World world = ((EntityStore) store.getExternalData()).getWorld();
+        LOGGER.atInfo().log("AutoPickup triggered for player " + playerUUID + ", item: " + itemStack.getItemId() + " x" + itemStack.getQuantity());
 
-        int delayTicks = plugin.getConfig().getInt("autopickup.pickup-delay-ticks", 0);
-
-        // Always cancel the drop event to prevent item from appearing in world
         event.setCancelled(true);
 
-        if (delayTicks == 0) {
-            performPickup(world, playerRef, ref, event.getItemStack());
-        } else {
-            Scheduler.runLater(() -> {
-                world.execute(() -> {
-                    if (ref.isValid()) {
-                        performPickup(world, playerRef, ref, event.getItemStack());
-                    }
-                });
-            }, delayTicks / 20);
+        ItemStackTransaction transaction = player.getInventory()
+                .getCombinedHotbarFirst()
+                .addItemStack(itemStack);
+
+        ItemStack remainder = transaction.getRemainder();
+        if (ItemStack.isEmpty(remainder)) {
+            String notificationType = plugin.getConfig().getString("autopickup.notification-type", "NOTIFICATION");
+            NotificationHelper.sendPickupNotification(playerRef, notificationType, itemStack);
         }
-    }
-
-    private boolean isCreativeMode(Player player) {
-        return player.getGameMode() == com.hypixel.hytale.protocol.GameMode.Creative;
-    }
-
-    private void performPickup(World world, PlayerRef playerRef, Ref<EntityStore> ref, ItemStack itemStack) {
-        world.execute(() -> {
-            Player player = ref.getStore().getComponent(ref, Player.getComponentType());
-            if (player == null) return;
-
-            ItemStackTransaction transaction = player.getInventory()
-                    .getCombinedHotbarFirst()
-                    .addItemStack(itemStack);
-
-            ItemStack remainder = transaction.getRemainder();
-            if (remainder == null || remainder.isEmpty()) {
-                String notificationType = plugin.getConfig().getString("autopickup.notification-type", "NOTIFICATION");
-                NotificationHelper.sendPickupNotification(playerRef, notificationType, itemStack);
-            }
-        });
     }
 
     private boolean shouldPickup(String blockId) {
