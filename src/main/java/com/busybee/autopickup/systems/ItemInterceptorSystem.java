@@ -188,42 +188,6 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
     }
 
     private BreakBlockHandler.BreakEntry findNearbyBreak(Vector3i itemPos) {
-        BreakBlockHandler.BreakEntry exactMatch = plugin.getBreakBlockHandler().getRecentBreak(itemPos);
-        if (exactMatch != null) {
-            PlayerRef playerRef = exactMatch.getPlayerRef();
-            if (playerRef != null && playerRef.isValid()) {
-                int radius = plugin.getPlayerDataManager().getRadius(playerRef.getUuid());
-                return exactMatch;
-            }
-        }
-
-        int maxRadius = plugin.getConfig().getInt("autopickup.max-pickup-radius", 10);
-
-        for (int dx = -maxRadius; dx <= maxRadius; dx++) {
-            for (int dy = -maxRadius; dy <= maxRadius; dy++) {
-                for (int dz = -maxRadius; dz <= maxRadius; dz++) {
-                    Vector3i checkPos = new Vector3i(
-                            itemPos.getX() + dx,
-                            itemPos.getY() + dy,
-                            itemPos.getZ() + dz
-                    );
-
-                    BreakBlockHandler.BreakEntry entry = plugin.getBreakBlockHandler().getRecentBreak(checkPos);
-                    if (entry != null) {
-                        PlayerRef playerRef = entry.getPlayerRef();
-                        if (playerRef != null && playerRef.isValid()) {
-                            int playerRadius = plugin.getPlayerDataManager().getRadius(playerRef.getUuid());
-                            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-                            if (distance <= playerRadius) {
-                                return entry;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return null;
+        return plugin.getBreakBlockHandler().getRecentBreak(itemPos);
     }
 }

@@ -13,15 +13,6 @@ autopickup:
   # Whether autopickup is enabled by default for new players
   default-enabled: false
 
-  # Default pickup radius for new players (in blocks)
-  default-radius: 5
-
-  # Minimum allowed pickup radius (in blocks)
-  min-pickup-radius: 1
-
-  # Maximum allowed pickup radius (in blocks)
-  max-pickup-radius: 10
-
   # How long to keep break/death locations in memory (in milliseconds)
   # Items spawning after this time won't be auto-picked up
   entry-expiry-ms: 500

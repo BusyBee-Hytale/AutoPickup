@@ -4,13 +4,11 @@ import ai.kodari.hylib.commons.message.Messenger;
 import ai.kodari.hylib.commons.util.ChatUtil;
 import ai.kodari.hylib.commons.util.Titles;
 import com.busybee.autopickup.AutoPickupPlugin;
-import com.busybee.autopickup.ui.pages.AutoPickupPage;
 import com.busybee.autopickup.util.NotificationHelper;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -95,51 +93,6 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
             plugin.getMessages().reload();
 
             Messenger.sendMessage(playerRef, "<color:#22c55e>[AutoPickup] <white>Configuration and messages reloaded successfully!");
-        }
-    }
-
-    public static class SettingsSubCommand extends AbstractPlayerCommand {
-
-        private final AutoPickupPlugin plugin;
-
-        public SettingsSubCommand(AutoPickupPlugin plugin) {
-            super("settings", "Open AutoPickup settings UI");
-            this.plugin = plugin;
-        }
-
-        @Override
-        protected void execute(
-                @Nonnull CommandContext ctx,
-                @Nonnull Store<EntityStore> store,
-                @Nonnull Ref<EntityStore> ref,
-                @Nonnull PlayerRef playerRef,
-                @Nonnull World world
-        ) {
-            PermissionsModule perms = PermissionsModule.get();
-            if (!perms.hasPermission(playerRef.getUuid(), "autopickup.settings")) {
-                Titles.player(
-                    playerRef,
-                    ChatUtil.parse(plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission")),
-                    ChatUtil.parse(plugin.getMessages().getString("titles.no-permission-subtitle", "<white>You don't have access to settings")),
-                    false
-                );
-                return;
-            }
-
-            if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
-                Titles.player(
-                    playerRef,
-                    ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled")),
-                    ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")),
-                    false
-                );
-                return;
-            }
-
-            Player player = store.getComponent(ref, Player.getComponentType());
-            if (player == null) return;
-
-            player.getPageManager().openCustomPage(ref, store, new AutoPickupPage(playerRef, plugin));
         }
     }
 }

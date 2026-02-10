@@ -53,7 +53,6 @@ public class AutoPickupPlugin extends JavaPlugin {
 
         AutoPickupCommand mainCommand = new AutoPickupCommand(this);
         mainCommand.addSubCommand(new AutoPickupCommand.ReloadSubCommand(this));
-        mainCommand.addSubCommand(new AutoPickupCommand.SettingsSubCommand(this));
         getCommandRegistry().registerCommand(mainCommand);
 
         LOGGER.atInfo().log("AutoPickup plugin setup complete!");
