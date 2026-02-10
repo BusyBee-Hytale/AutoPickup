@@ -67,19 +67,21 @@ public class NotificationHelper {
 
             switch (notificationType.toUpperCase()) {
                 case "TITLE":
+                    // Use Message.raw() and .color() like ChestCollector does
                     Titles.player(
                         playerRef,
-                        ChatUtil.parse(title),
-                        ChatUtil.parse(subtitle),
+                        Message.raw(cleanTitle).color(titleColor),
+                        Message.raw(cleanSubtitle).color("#ffffff"),
                         false
                     );
                     break;
 
                 case "NOTIFICATION":
+                    // Use Message.raw() and .color() for notifications
                     Notifications.player(
                             playerRef,
-                            ChatUtil.parse(title),
-                            ChatUtil.parse(subtitle),
+                            Message.raw(cleanTitle).color(titleColor),
+                            Message.raw(cleanSubtitle).color("#ffffff"),
                             null,
                             isEnabled ? NotificationStyle.Success : NotificationStyle.Warning
                     );
@@ -88,7 +90,7 @@ public class NotificationHelper {
                 case "CHAT":
                     AutoPickupPlugin plugin = AutoPickupPlugin.getInstance();
                     String prefix = plugin.getMessages().getString("chat.prefix", "<color:#22c55e>[AutoPickup]");
-                    Messenger.sendMessage(playerRef, prefix + " " + title);
+                    Messenger.sendMessage(playerRef, prefix + " " + cleanTitle);
                     break;
 
                 case "NONE":
@@ -98,7 +100,7 @@ public class NotificationHelper {
         } catch (Exception e) {
             AutoPickupPlugin.LOGGER.atWarning().log("Failed to send toggle notification: " + e.getMessage());
             // Fallback to chat message if notification fails
-            Messenger.sendMessage(playerRef, ChatUtil.parse(title) + " " + ChatUtil.parse(subtitle));
+            Messenger.sendMessage(playerRef, title + " " + subtitle);
         }
     }
 
@@ -111,11 +113,21 @@ public class NotificationHelper {
                 return coloredText.substring(start, end);
             }
         }
+
+        // Handle named colors like <white>, <red>, <green>, etc.
+        if (coloredText.contains("<white>")) return "#ffffff";
+        if (coloredText.contains("<red>")) return "#ff0000";
+        if (coloredText.contains("<green>")) return "#00ff00";
+        if (coloredText.contains("<blue>")) return "#0000ff";
+        if (coloredText.contains("<yellow>")) return "#ffff00";
+        if (coloredText.contains("<gray>") || coloredText.contains("<grey>")) return "#808080";
+        if (coloredText.contains("<black>")) return "#000000";
+
         return "#ffffff"; // default white
     }
 
     private static String extractText(String coloredText) {
-        // Remove color tags from format like "<color:#22c55e>Text" or "<white>Text"
+        // Remove all color tags from format like "<color:#22c55e>Text" or "<white>Text"
         String text = coloredText.replaceAll("<color:[^>]+>", "").replaceAll("<[^>]+>", "");
         return text.trim();
     }
