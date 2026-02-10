@@ -1,0 +1,7 @@
+{
+    "Group": "com.busybee",
+    "Name": "AutoPickup",
+    "Version": "1.0.0",
+    "Main": "com.busybee.autopickup.AutoPickupPlugin",
+    "IncludesAssetPack": true
+}

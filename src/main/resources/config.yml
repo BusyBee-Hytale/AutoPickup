@@ -1,0 +1,32 @@
+autopickup:
+  enabled: true
+
+  default-enabled: false
+
+  disable-in-creative: true
+
+  pickup-delay-ticks: 0
+
+  notification-type: "NOTIFICATION"
+
+  toggle-notification-type: "TITLE"
+
+  whitelist-enabled: false
+
+  blacklist-enabled: false
+
+  whitelist:
+    - "ore"
+    - "trunk"
+    - "log"
+    - "stone"
+    - "dirt"
+    - "sand"
+    - "gravel"
+
+  blacklist:
+    - "chest"
+    - "furniture"
+    - "crafting"
+    - "door"
+    - "gate"
