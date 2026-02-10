@@ -3,6 +3,7 @@ package com.busybee.autopickup;
 import ai.kodari.hylib.commons.scheduler.Scheduler;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.commands.AutoPickupCommand;
+import com.busybee.autopickup.database.DatabaseManager;
 import com.busybee.autopickup.manager.PlayerDataManager;
 import com.busybee.autopickup.systems.BreakBlockHandler;
 import com.busybee.autopickup.systems.DropItemHandler;
@@ -11,6 +12,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 
 public class AutoPickupPlugin extends JavaPlugin {
 
@@ -19,6 +21,7 @@ public class AutoPickupPlugin extends JavaPlugin {
 
     private YamlConfig config;
     private YamlConfig messages;
+    private DatabaseManager databaseManager;
     private PlayerDataManager playerDataManager;
     private BreakBlockHandler breakBlockHandler;
 
@@ -38,9 +41,9 @@ public class AutoPickupPlugin extends JavaPlugin {
         YamlConfig.init(this);
         this.config = new YamlConfig("config.yml");
         this.messages = new YamlConfig("messages.yml");
-
-        this.playerDataManager = new PlayerDataManager(this);
-
+        this.databaseManager = new DatabaseManager(this);
+        this.databaseManager.initialize();
+        this.playerDataManager = new PlayerDataManager(this, databaseManager);
         this.breakBlockHandler = new BreakBlockHandler();
 
         getEntityStoreRegistry().registerSystem(breakBlockHandler);
@@ -59,23 +62,35 @@ public class AutoPickupPlugin extends JavaPlugin {
     @Override
     protected void shutdown() {
         LOGGER.atInfo().log("AutoPickup plugin shutting down...");
-        playerDataManager.saveAllData();
+
+        if (playerDataManager != null) {
+            playerDataManager.saveAllData();
+        }
+
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
+
         Scheduler.shutdown();
     }
 
     public YamlConfig getConfig() {
         return config;
     }
-
     public YamlConfig getMessages() {
         return messages;
     }
-
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
     }
-
     public BreakBlockHandler getBreakBlockHandler() {
         return breakBlockHandler;
+    }
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    public File getResourcesFolder() {
+        return new File(System.getProperty("user.dir"), "mods/AutoPickup/data");
     }
 }

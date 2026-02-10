@@ -33,13 +33,22 @@
             <artifactId>HyLib</artifactId>
             <version>1.0.7</version>
         </dependency>
-
         <dependency>
             <groupId>com.hypixel</groupId>
             <artifactId>hytale-server</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/HytaleServer.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.9</version>
         </dependency>
     </dependencies>
 

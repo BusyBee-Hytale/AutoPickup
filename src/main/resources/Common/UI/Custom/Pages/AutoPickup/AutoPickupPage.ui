@@ -78,7 +78,7 @@ $Common.@PageOverlay {
                 
                 Slider #RadiusSlider {
                     Style: $Common.@DefaultSliderStyle;
-                    Min: 0;
+                    Min: 1;
                     Max: 10;
                     Value: 5;
                 }
