@@ -45,7 +45,7 @@ autopickup:
   # Enable blacklist mode (pickup everything except blacklisted blocks)
   blacklist-enabled: false
 
-  # Whitelist - Only these blocks will be auto-picked up (when whitelist-enabled: true)
+  # Whitelist - Only these blocks/items will be auto-picked up (when whitelist-enabled: true)
   # Supports partial matching (e.g., "Ore" matches all ore types)
   whitelist:
     - "Ore_Copper"
@@ -54,10 +54,12 @@ autopickup:
     - "Ore_Silver"
     - "Ore_Emerald"
     - "Ore_Diamond"
+    - "Ingredient_Bone_Fragment"
 
-  # Blacklist - These blocks will NOT be auto-picked up (when blacklist-enabled: true)
+  # Blacklist - These blocks/items will NOT be auto-picked up (when blacklist-enabled: true)
   # Supports partial matching (e.g., "Container" matches all containers)
   blacklist:
     - "Container_Chest"
     - "Container_Barrel"
     - "Container_Coffin"
+    - "Ingredient_Sac_Venom"

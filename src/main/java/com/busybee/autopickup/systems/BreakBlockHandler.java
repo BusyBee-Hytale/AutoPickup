@@ -96,7 +96,6 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
             return;
         }
 
-        LOGGER.atInfo().log("BreakBlockEvent - Player: " + playerUUID + ", Block: " + blockId + ", Position: " + blockPos);
         recentBreaks.put(blockPos, new BreakEntry(playerUUID, blockId));
     }
 
@@ -120,7 +119,6 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
 
     public void markMobDeath(Vector3i position, UUID playerUUID) {
         recentBreaks.put(position, new BreakEntry(playerUUID, "MOB_DROP", true));
-        LOGGER.atInfo().log("Marked mob death at position: " + position + " for player: " + playerUUID);
     }
 
     private void cleanupOldEntries() {

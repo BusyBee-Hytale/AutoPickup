@@ -88,7 +88,8 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        if (!breakEntry.isMobDrop() && !shouldPickup(breakEntry.getBlockId())) {
+        String itemId = itemStack.getItemId();
+        if (!shouldPickup(breakEntry.isMobDrop() ? itemId : breakEntry.getBlockId())) {
             return;
         }
 
@@ -102,8 +103,6 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
                 return;
             }
         }
-
-        LOGGER.atInfo().log("ItemInterceptor - Picking up item " + itemStack.getItemId() + " x" + itemStack.getQuantity() + " for player " + playerRef.getUuid());
 
         ItemStackTransaction transaction = player.getInventory()
                 .getCombinedHotbarFirst()
