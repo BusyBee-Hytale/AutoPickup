@@ -1,7 +1,22 @@
 {
-    "Group": "BusyBee",
-    "Name": "AutoPickup",
-    "Version": "2026.2.0",
-    "Main": "com.busybee.autopickup.AutoPickupPlugin",
-    "IncludesAssetPack": true
+  "Group": "BusyBee",
+  "Name": "AutoPickup",
+  "Version": "2026.2.0",
+  "Description": "Automatically picks up items when breaking blocks",
+  "Authors": [
+    {
+      "Name": "djtmk",
+      "Email": "",
+      "Url": "discord.gg/abdm29q7af"
+    }
+  ],
+  "Website": "https://www.curseforge.com/hytale/mods/autopickup",
+  "ServerVersion": "*",
+  "Main": "com.busybee.autopickup.AutoPickupPlugin",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "LoadBefore": {},
+  "DisabledByDefault": false,
+  "IncludesAssetPack": true,
+  "SubPlugins": []
 }
