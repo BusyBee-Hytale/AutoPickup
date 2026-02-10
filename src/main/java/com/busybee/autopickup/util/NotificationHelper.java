@@ -28,8 +28,8 @@ public class NotificationHelper {
             case "NOTIFICATION":
                 Notifications.player(
                         playerRef,
-                        ChatUtil.parse(messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up")),
-                        ChatUtil.parse(pickupMessage),
+                        messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up"),
+                        pickupMessage,
                         null,
                         NotificationStyle.Success
                 );
@@ -38,8 +38,8 @@ public class NotificationHelper {
             case "TITLE":
                 Titles.player(
                         playerRef,
-                        ChatUtil.parse("<color:#22c55e>+" + quantity),
-                        ChatUtil.parse("<white>" + itemName),
+                        "<color:#22c55e>+" + quantity,
+                        "<white>" + itemName,
                         false
                 );
                 break;
@@ -58,10 +58,13 @@ public class NotificationHelper {
         }
     }
 
-    public static void sendToggleNotification(PlayerRef playerRef, String notificationType, Message title, Message subtitle) {
+    public static void sendToggleNotification(PlayerRef playerRef, String notificationType, String title, String subtitle) {
+        AutoPickupPlugin.LOGGER.atInfo().log("Sending toggle notification - Type: " + notificationType);
+
         switch (notificationType.toUpperCase()) {
             case "TITLE":
                 Titles.player(playerRef, title, subtitle, true);
+                AutoPickupPlugin.LOGGER.atInfo().log("Sent TITLE notification to player: " + playerRef.getUuid());
                 break;
 
             case "NOTIFICATION":
@@ -72,10 +75,12 @@ public class NotificationHelper {
                         null,
                         NotificationStyle.Success
                 );
+                AutoPickupPlugin.LOGGER.atInfo().log("Sent NOTIFICATION to player: " + playerRef.getUuid());
                 break;
 
             case "CHAT":
-                Messenger.sendMessage(playerRef, Message.join(title, Message.raw(" - "), subtitle).toString());
+                Messenger.sendMessage(playerRef, title + " - " + subtitle);
+                AutoPickupPlugin.LOGGER.atInfo().log("Sent CHAT message to player: " + playerRef.getUuid());
                 break;
 
             case "NONE":

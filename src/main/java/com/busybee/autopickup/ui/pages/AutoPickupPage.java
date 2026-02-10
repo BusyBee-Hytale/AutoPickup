@@ -115,15 +115,15 @@ public class AutoPickupPage extends InteractiveCustomUIPage<AutoPickupPageData> 
                         NotificationHelper.sendToggleNotification(
                                 this.playerRef,
                                 notificationType,
-                                ChatUtil.parse(plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled")),
-                                ChatUtil.parse(plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up"))
+                                plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled"),
+                                plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up")
                         );
                     } else {
                         NotificationHelper.sendToggleNotification(
                                 this.playerRef,
                                 notificationType,
-                                ChatUtil.parse(plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled")),
-                                ChatUtil.parse(plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally"))
+                                plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled"),
+                                plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally")
                         );
                     }
 

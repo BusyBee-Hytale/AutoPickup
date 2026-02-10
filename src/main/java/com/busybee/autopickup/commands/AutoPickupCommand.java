@@ -63,8 +63,8 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
         if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
             Titles.player(
                 playerRef,
-                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")),
+                plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled"),
+                plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator"),
                 false
             );
             return;
@@ -75,21 +75,23 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
 
         plugin.getPlayerDataManager().setAutoPickupEnabled(playerRef.getUuid(), newStatus);
 
+        AutoPickupPlugin.LOGGER.atInfo().log("Player " + playerRef.getUuid() + " toggled AutoPickup to: " + newStatus);
+
         String notificationType = plugin.getConfig().getString("autopickup.toggle-notification-type", "TITLE");
 
         if (newStatus) {
             NotificationHelper.sendToggleNotification(
                 playerRef,
                 notificationType,
-                ChatUtil.parse(plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up"))
+                plugin.getMessages().getString("titles.enabled", "<color:#22c55e>AutoPickup Enabled"),
+                plugin.getMessages().getString("titles.enabled-subtitle", "<white>Items will be automatically picked up")
             );
         } else {
             NotificationHelper.sendToggleNotification(
                 playerRef,
                 notificationType,
-                ChatUtil.parse(plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally"))
+                plugin.getMessages().getString("titles.disabled", "<color:#ff0000>AutoPickup Disabled"),
+                plugin.getMessages().getString("titles.disabled-subtitle", "<white>Items will drop normally")
             );
         }
     }
@@ -99,8 +101,8 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
         if (!perms.hasPermission(playerRef.getUuid(), "autopickup.settings")) {
             Titles.player(
                 playerRef,
-                ChatUtil.parse(plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.no-permission-subtitle", "<white>You don't have access to settings")),
+                plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
+                plugin.getMessages().getString("titles.no-permission-subtitle", "<white>You don't have access to settings"),
                 false
             );
             return;
@@ -109,8 +111,8 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
         if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
             Titles.player(
                 playerRef,
-                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")),
+                plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled"),
+                plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator"),
                 false
             );
             return;

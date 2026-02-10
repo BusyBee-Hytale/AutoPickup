@@ -23,6 +23,8 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import javax.annotation.Nonnull;
 import java.util.UUID;
 
+import static com.busybee.autopickup.AutoPickupPlugin.LOGGER;
+
 public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEvent.Drop> {
 
     private final AutoPickupPlugin plugin;
@@ -47,7 +49,9 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
         Ref<EntityStore> ref = archetypeChunk.getReferenceTo(index);
 
         UUIDComponent uuidComponent = store.getComponent(ref, UUIDComponent.getComponentType());
-        if (uuidComponent == null) return;
+        if (uuidComponent == null) {
+            return;
+        }
 
         UUID playerUUID = uuidComponent.getUuid();
 
@@ -56,7 +60,9 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
         }
 
         PlayerRef playerRef = Universe.get().getPlayer(playerUUID);
-        if (playerRef == null || !playerRef.isValid()) return;
+        if (playerRef == null || !playerRef.isValid()) {
+            return;
+        }
 
         if (plugin.getConfig().getBoolean("autopickup.disable-in-creative", true)) {
             Player player = store.getComponent(ref, Player.getComponentType());
@@ -71,13 +77,17 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
             return;
         }
 
+        LOGGER.atInfo().log("AutoPickup triggered for player " + playerUUID + ", item: " + event.getItemStack().getItemId() + " x" + event.getItemStack().getQuantity());
+
         World world = ((EntityStore) store.getExternalData()).getWorld();
 
         int delayTicks = plugin.getConfig().getInt("autopickup.pickup-delay-ticks", 0);
 
+        // Always cancel the drop event to prevent item from appearing in world
+        event.setCancelled(true);
+
         if (delayTicks == 0) {
             performPickup(world, playerRef, ref, event.getItemStack());
-            event.setCancelled(true);
         } else {
             Scheduler.runLater(() -> {
                 world.execute(() -> {
@@ -144,6 +154,6 @@ public class DropItemHandler extends EntityEventSystem<EntityStore, DropItemEven
     @Nonnull
     @Override
     public Query<EntityStore> getQuery() {
-        return Archetype.empty();
+        return Archetype.of(Player.getComponentType());
     }
 }

@@ -1,5 +1,6 @@
 package com.busybee.autopickup.systems;
 
+import com.busybee.autopickup.AutoPickupPlugin;
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -8,6 +9,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -15,6 +17,8 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.busybee.autopickup.AutoPickupPlugin.LOGGER;
 
 public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlockEvent> {
 
@@ -35,18 +39,21 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         Ref<EntityStore> ref = archetypeChunk.getReferenceTo(index);
 
         UUIDComponent uuidComponent = store.getComponent(ref, UUIDComponent.getComponentType());
-        if (uuidComponent == null) return;
+        if (uuidComponent == null) {
+            return;
+        }
 
         UUID playerUUID = uuidComponent.getUuid();
         String blockId = event.getBlockType().getId();
 
+        LOGGER.atInfo().log("BreakBlockEvent - Player: " + playerUUID + ", Block: " + blockId);
         recentBreaks.put(playerUUID, blockId);
     }
 
     @Nonnull
     @Override
     public Query<EntityStore> getQuery() {
-        return Archetype.empty();
+        return Archetype.of(Player.getComponentType());
     }
 
     public String getAndClearRecentBreak(UUID playerUUID) {
