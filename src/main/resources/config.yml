@@ -13,6 +13,9 @@ autopickup:
   # Whether autopickup is enabled by default for new players
   default-enabled: false
 
+  # Default pickup radius for new players (in blocks)
+  default-radius: 5
+
   # Disable autopickup when players are in creative mode
   disable-in-creative: true
 

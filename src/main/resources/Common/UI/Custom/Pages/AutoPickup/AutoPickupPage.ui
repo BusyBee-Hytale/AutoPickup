@@ -34,7 +34,7 @@ $Common.@PageOverlay {
                     }
                     
                     Label #StatusLabel {
-                        Style: (FontSize: 14, RenderBold: true, RenderUppercase: true);
+                        Style: (FontSize: 14, TextColor: #ef4444, RenderBold: true, RenderUppercase: true);
                         Text: "DISABLED";
                     }
                 }
