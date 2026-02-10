@@ -33,7 +33,6 @@ public class MobDropListener extends DeathSystems.OnDeathSystem {
     @Override
     @Nonnull
     public Query<EntityStore> getQuery() {
-        // Listen for NPC entity deaths (includes monsters)
         return NPCEntity.getComponentType();
     }
 
@@ -49,36 +48,30 @@ public class MobDropListener extends DeathSystems.OnDeathSystem {
             return;
         }
 
-        // Get death info
         Damage deathInfo = deathComponent.getDeathInfo();
         if (deathInfo == null) {
             return;
         }
 
-        // Get damage source
         Damage.Source source = deathInfo.getSource();
         if (!(source instanceof Damage.EntitySource)) {
             return;
         }
 
-        // Get killer entity ref
         Damage.EntitySource entitySource = (Damage.EntitySource) source;
         Ref<EntityStore> killerRef = entitySource.getRef();
 
-        // Check if killer is a player
         Player killerPlayer = store.getComponent(killerRef, Player.getComponentType());
         if (killerPlayer == null) {
             return;
         }
 
-        // Check if disabled in creative
         if (plugin.getConfig().getBoolean("autopickup.disable-in-creative", true)) {
             if (killerPlayer.getGameMode() == com.hypixel.hytale.protocol.GameMode.Creative) {
                 return;
             }
         }
 
-        // Get killer UUID
         UUIDComponent killerUuidComponent = store.getComponent(killerRef, UUIDComponent.getComponentType());
         if (killerUuidComponent == null) {
             return;
@@ -90,12 +83,10 @@ public class MobDropListener extends DeathSystems.OnDeathSystem {
             return;
         }
 
-        // Check if player has autopickup enabled
         if (!plugin.getPlayerDataManager().isAutoPickupEnabled(killerUUID)) {
             return;
         }
 
-        // Get mob position for marking
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
             return;
@@ -108,8 +99,6 @@ public class MobDropListener extends DeathSystems.OnDeathSystem {
         );
 
         LOGGER.atInfo().log("MobDropListener - NPC death at " + mobPos + ", killed by player: " + killerUUID);
-
-        // Mark this position as a mob_drop so items from this mob will be auto-picked up
         breakBlockHandler.markMobDeath(mobPos, killerUUID);
     }
 }

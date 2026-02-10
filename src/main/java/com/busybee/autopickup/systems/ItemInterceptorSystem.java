@@ -34,7 +34,6 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
     @Nonnull
     @Override
     public Query<EntityStore> getQuery() {
-        // Listen for entities with ItemComponent and TransformComponent
         return Query.and(ItemComponent.getComponentType(), TransformComponent.getComponentType());
     }
 
@@ -45,7 +44,6 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             @Nonnull Store<EntityStore> store,
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
-        // Only handle spawned entities
         if (addReason != AddReason.SPAWN) {
             return;
         }
@@ -54,13 +52,11 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        // Get item transform component
         TransformComponent transform = commandBuffer.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
             return;
         }
 
-        // Get item position
         Vector3d position = transform.getPosition();
         Vector3i blockPos = new Vector3i(
                 (int) Math.floor(position.x),
@@ -68,24 +64,20 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
                 (int) Math.floor(position.z)
         );
 
-        // Check if this position has a recent break/death
-        BreakBlockHandler.BreakEntry breakEntry = plugin.getBreakBlockHandler().getRecentBreak(blockPos);
+        BreakBlockHandler.BreakEntry breakEntry = findNearbyBreak(blockPos);
         if (breakEntry == null) {
             return;
         }
 
-        // Get player ref
         PlayerRef playerRef = breakEntry.getPlayerRef();
         if (playerRef == null || !playerRef.isValid()) {
             return;
         }
 
-        // Check if player has autopickup enabled
         if (!plugin.getPlayerDataManager().isAutoPickupEnabled(playerRef.getUuid())) {
             return;
         }
 
-        // Get item component
         ItemComponent itemComponent = commandBuffer.getComponent(ref, ItemComponent.getComponentType());
         if (itemComponent == null) {
             return;
@@ -96,18 +88,15 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        // Check whitelist/blacklist (mob drops bypass this check)
         if (!breakEntry.isMobDrop() && !shouldPickup(breakEntry.getBlockId())) {
             return;
         }
 
-        // Get player entity
         Player player = getPlayerEntity(playerRef, store);
         if (player == null) {
             return;
         }
 
-        // Check creative mode
         if (plugin.getConfig().getBoolean("autopickup.disable-in-creative", true)) {
             if (player.getGameMode() == com.hypixel.hytale.protocol.GameMode.Creative) {
                 return;
@@ -116,24 +105,19 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
 
         LOGGER.atInfo().log("ItemInterceptor - Picking up item " + itemStack.getItemId() + " x" + itemStack.getQuantity() + " for player " + playerRef.getUuid());
 
-        // Add item to player inventory
         ItemStackTransaction transaction = player.getInventory()
                 .getCombinedHotbarFirst()
                 .addItemStack(itemStack);
 
         ItemStack remainder = transaction.getRemainder();
         if (ItemStack.isEmpty(remainder)) {
-            // All items picked up - remove entity
             commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
-
-            // Send notification
             String notificationType = plugin.getConfig().getString("autopickup.notification-type", "NOTIFICATION");
             NotificationHelper.sendPickupNotification(playerRef, notificationType, itemStack);
+
         } else if (remainder.getQuantity() < itemStack.getQuantity()) {
-            // Partial pickup - update item stack
             itemComponent.setItemStack(remainder);
 
-            // Send notification for picked up amount
             int pickedUpQuantity = itemStack.getQuantity() - remainder.getQuantity();
             ItemStack pickedUp = itemStack.withQuantity(pickedUpQuantity);
             String notificationType = plugin.getConfig().getString("autopickup.notification-type", "NOTIFICATION");
@@ -148,7 +132,6 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             @Nonnull Store<EntityStore> store,
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
-        // No action needed on entity removal
     }
 
     private Player getPlayerEntity(PlayerRef playerRef, Store<EntityStore> store) {
@@ -202,5 +185,45 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
         }
 
         return true;
+    }
+
+    private BreakBlockHandler.BreakEntry findNearbyBreak(Vector3i itemPos) {
+        BreakBlockHandler.BreakEntry exactMatch = plugin.getBreakBlockHandler().getRecentBreak(itemPos);
+        if (exactMatch != null) {
+            PlayerRef playerRef = exactMatch.getPlayerRef();
+            if (playerRef != null && playerRef.isValid()) {
+                int radius = plugin.getPlayerDataManager().getRadius(playerRef.getUuid());
+                return exactMatch;
+            }
+        }
+
+        int maxRadius = plugin.getConfig().getInt("autopickup.max-pickup-radius", 10);
+
+        for (int dx = -maxRadius; dx <= maxRadius; dx++) {
+            for (int dy = -maxRadius; dy <= maxRadius; dy++) {
+                for (int dz = -maxRadius; dz <= maxRadius; dz++) {
+                    Vector3i checkPos = new Vector3i(
+                            itemPos.getX() + dx,
+                            itemPos.getY() + dy,
+                            itemPos.getZ() + dz
+                    );
+
+                    BreakBlockHandler.BreakEntry entry = plugin.getBreakBlockHandler().getRecentBreak(checkPos);
+                    if (entry != null) {
+                        PlayerRef playerRef = entry.getPlayerRef();
+                        if (playerRef != null && playerRef.isValid()) {
+                            int playerRadius = plugin.getPlayerDataManager().getRadius(playerRef.getUuid());
+                            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                            if (distance <= playerRadius) {
+                                return entry;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

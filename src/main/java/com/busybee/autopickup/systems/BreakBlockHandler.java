@@ -49,15 +49,12 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         public UUID getPlayerUUID() {
             return playerUUID;
         }
-
         public String getBlockId() {
             return blockId;
         }
-
         public long getTimestamp() {
             return timestamp;
         }
-
         public boolean isMobDrop() {
             return mobDrop;
         }
@@ -73,7 +70,6 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
 
     public BreakBlockHandler() {
         super(BreakBlockEvent.class);
-        // Clean up old entries every second
         scheduler.scheduleAtFixedRate(this::cleanupOldEntries, 1, 1, TimeUnit.SECONDS);
     }
 
@@ -114,7 +110,6 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     public BreakEntry getRecentBreak(Vector3i position) {
         BreakEntry entry = recentBreaks.get(position);
         if (entry != null) {
-            // Check if entry is still valid (within configured time)
             long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
             if (System.currentTimeMillis() - entry.timestamp <= expiryTime) {
                 return entry;
@@ -124,7 +119,6 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     public void markMobDeath(Vector3i position, UUID playerUUID) {
-        // Mark as a special mob_drop entry that bypasses whitelist/blacklist checks
         recentBreaks.put(position, new BreakEntry(playerUUID, "MOB_DROP", true));
         LOGGER.atInfo().log("Marked mob death at position: " + position + " for player: " + playerUUID);
     }

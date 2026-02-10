@@ -67,7 +67,6 @@ public class NotificationHelper {
 
             switch (notificationType.toUpperCase()) {
                 case "TITLE":
-                    // Use Message.raw() and .color() like ChestCollector does
                     Titles.player(
                         playerRef,
                         Message.raw(cleanTitle).color(titleColor),
@@ -77,7 +76,6 @@ public class NotificationHelper {
                     break;
 
                 case "NOTIFICATION":
-                    // Use Message.raw() and .color() for notifications
                     Notifications.player(
                             playerRef,
                             Message.raw(cleanTitle).color(titleColor),
@@ -99,13 +97,11 @@ public class NotificationHelper {
             }
         } catch (Exception e) {
             AutoPickupPlugin.LOGGER.atWarning().log("Failed to send toggle notification: " + e.getMessage());
-            // Fallback to chat message if notification fails
             Messenger.sendMessage(playerRef, title + " " + subtitle);
         }
     }
 
     private static String extractColor(String coloredText) {
-        // Extract hex color from format like "<color:#22c55e>AutoPickup Enabled"
         if (coloredText.contains("<color:#")) {
             int start = coloredText.indexOf("#");
             int end = coloredText.indexOf(">", start);
@@ -114,7 +110,6 @@ public class NotificationHelper {
             }
         }
 
-        // Handle named colors like <white>, <red>, <green>, etc.
         if (coloredText.contains("<white>")) return "#ffffff";
         if (coloredText.contains("<red>")) return "#ff0000";
         if (coloredText.contains("<green>")) return "#00ff00";
@@ -127,7 +122,6 @@ public class NotificationHelper {
     }
 
     private static String extractText(String coloredText) {
-        // Remove all color tags from format like "<color:#22c55e>Text" or "<white>Text"
         String text = coloredText.replaceAll("<color:[^>]+>", "").replaceAll("<[^>]+>", "");
         return text.trim();
     }
