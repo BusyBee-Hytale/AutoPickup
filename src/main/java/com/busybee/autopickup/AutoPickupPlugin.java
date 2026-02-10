@@ -64,11 +64,9 @@ public class AutoPickupPlugin extends JavaPlugin {
     public YamlConfig getConfig() {
         return config;
     }
-
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
     }
-
     public BreakBlockHandler getBreakBlockHandler() {
         return breakBlockHandler;
     }
