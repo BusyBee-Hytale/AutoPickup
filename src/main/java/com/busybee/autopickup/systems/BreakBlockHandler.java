@@ -107,18 +107,42 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
 
     @Nullable
     public BreakEntry getRecentBreak(Vector3i position) {
-        BreakEntry entry = recentBreaks.get(position);
-        if (entry != null) {
-            long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
-            if (System.currentTimeMillis() - entry.timestamp <= expiryTime) {
-                return entry;
+        long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
+        long now = System.currentTimeMillis();
+
+        BreakEntry exactMatch = recentBreaks.get(position);
+        if (exactMatch != null && (now - exactMatch.timestamp) <= expiryTime) {
+            return exactMatch;
+        }
+
+        int searchRadius = 2;
+        for (int dx = -searchRadius; dx <= searchRadius; dx++) {
+            for (int dy = -searchRadius; dy <= searchRadius; dy++) {
+                for (int dz = -searchRadius; dz <= searchRadius; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) {
+                        continue;
+                    }
+
+                    Vector3i checkPos = new Vector3i(
+                        position.x + dx,
+                        position.y + dy,
+                        position.z + dz
+                    );
+
+                    BreakEntry entry = recentBreaks.get(checkPos);
+                    if (entry != null && (now - entry.timestamp) <= expiryTime) {
+                        return entry;
+                    }
+                }
             }
         }
+
         return null;
     }
 
     public void markMobDeath(Vector3i position, UUID playerUUID) {
         recentBreaks.put(position, new BreakEntry(playerUUID, "MOB_DROP", true));
+        LOGGER.atInfo().log("Marked mob death at " + position + " for player " + playerUUID);
     }
 
     private void cleanupOldEntries() {
