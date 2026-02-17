@@ -1,7 +1,7 @@
 {
   "Group": "BusyBee",
   "Name": "AutoPickup",
-  "Version": "2026.2.2",
+  "Version": "2026.2.3",
   "Description": "Automatically picks up items when breaking blocks",
   "Authors": [
     {
@@ -11,7 +11,7 @@
     }
   ],
   "Website": "https://www.curseforge.com/hytale/mods/autopickup",
-  "ServerVersion": "*",
+  "ServerVersion": "2026.02.17-255364b8e",
   "Main": "com.busybee.autopickup.AutoPickupPlugin",
   "Dependencies": {},
   "OptionalDependencies": {},
