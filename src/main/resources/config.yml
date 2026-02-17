@@ -17,6 +17,10 @@ autopickup:
   # Items spawning after this time won't be auto-picked up
   entry-expiry-ms: 500
 
+  # Radius in blocks to search for recent breaks/deaths when items spawn
+  # Larger values help with scattered drops from mobs and trees but may pickup unintended items
+  pickup-radius: 3
+
   # Disable autopickup when players are in creative mode
   disable-in-creative: true
 
