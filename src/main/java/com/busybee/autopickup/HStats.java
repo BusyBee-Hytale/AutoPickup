@@ -126,7 +126,7 @@ public class HStats {
                 os.write(out);
             }
 
-            int code = http.getResponseCode(); // forces request to actually send
+            int code = http.getResponseCode();
             InputStream is = (code >= 200 && code < 300) ? http.getInputStream() : http.getErrorStream();
             String body = (is != null) ? new String(is.readAllBytes(), StandardCharsets.UTF_8) : "";
 
