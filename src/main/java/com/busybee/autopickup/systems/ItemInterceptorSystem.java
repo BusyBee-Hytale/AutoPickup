@@ -21,8 +21,6 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
 
-import static com.busybee.autopickup.AutoPickupPlugin.LOGGER;
-
 public class ItemInterceptorSystem extends RefSystem<EntityStore> {
 
     private final AutoPickupPlugin plugin;

@@ -20,8 +20,6 @@ import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import javax.annotation.Nonnull;
 import java.util.UUID;
 
-import static com.busybee.autopickup.AutoPickupPlugin.LOGGER;
-
 public class MobDropListener extends DeathSystems.OnDeathSystem {
 
     private final BreakBlockHandler breakBlockHandler;
@@ -98,7 +96,6 @@ public class MobDropListener extends DeathSystems.OnDeathSystem {
                 (int) Math.floor(transform.getPosition().z)
         );
 
-        LOGGER.atInfo().log("MobDropListener - NPC death at " + mobPos + ", killed by player: " + killerUUID);
         breakBlockHandler.markMobDeath(mobPos, killerUUID);
     }
 }

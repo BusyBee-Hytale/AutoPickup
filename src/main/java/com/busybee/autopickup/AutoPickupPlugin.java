@@ -37,8 +37,6 @@ public class AutoPickupPlugin extends JavaPlugin {
 
     @Override
     protected void setup() {
-        LOGGER.atInfo().log("Setting up AutoPickup plugin...");
-
         new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "1.0.0");
 
         YamlConfig.init(this);
@@ -56,19 +54,14 @@ public class AutoPickupPlugin extends JavaPlugin {
         AutoPickupCommand mainCommand = new AutoPickupCommand(this);
         mainCommand.addSubCommand(new AutoPickupCommand.ReloadSubCommand(this));
         getCommandRegistry().registerCommand(mainCommand);
-
-        LOGGER.atInfo().log("AutoPickup plugin setup complete!");
     }
 
     @Override
     protected void start() {
-        LOGGER.atInfo().log("AutoPickup plugin started!");
     }
 
     @Override
     protected void shutdown() {
-        LOGGER.atInfo().log("AutoPickup plugin shutting down...");
-
         if (playerDataManager != null) {
             playerDataManager.saveAllData();
         }

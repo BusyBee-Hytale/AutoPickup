@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 public class HStats {
 
     private final String URL_BASE = "https://api.hstats.dev/api/";
-    private final boolean DEBUG = false;
 
     private final String modUUID;
     private final String modVersion;
@@ -54,14 +53,7 @@ public class HStats {
         arguments.put("java_version", System.getProperty("java.version"));
         arguments.put("cores", String.valueOf(Runtime.getRuntime().availableProcessors()));
 
-        boolean success = sendRequest(URL_BASE + "server/update-server", arguments);
-        if (DEBUG) {
-            if (success) {
-                System.out.println("[HStats] Metrics updated successfully.");
-            } else {
-                System.out.println("[HStats] Failed to update metrics.");
-            }
-        }
+        sendRequest(URL_BASE + "server/update-server", arguments);
     }
 
     private void addModToServer() {
@@ -127,17 +119,9 @@ public class HStats {
             }
 
             int code = http.getResponseCode();
-            InputStream is = (code >= 200 && code < 300) ? http.getInputStream() : http.getErrorStream();
-            String body = (is != null) ? new String(is.readAllBytes(), StandardCharsets.UTF_8) : "";
-
-            if (DEBUG)
-                System.out.println("Metrics POST -> " + code + " " + body);
-
             http.disconnect();
             return code >= 200 && code < 300;
         } catch (Exception e) {
-            if (DEBUG)
-                System.out.println("[HStats] Request failed: " + e.getMessage());
             return false;
         }
     }
