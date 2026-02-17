@@ -39,6 +39,8 @@ public class AutoPickupPlugin extends JavaPlugin {
     protected void setup() {
         LOGGER.atInfo().log("Setting up AutoPickup plugin...");
 
+        new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "1.0.0");
+
         YamlConfig.init(this);
         this.config = new YamlConfig("config.yml");
         this.messages = new YamlConfig("messages.yml");

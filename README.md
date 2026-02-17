@@ -29,15 +29,14 @@ A Hytale server plugin that automatically picks up items from broken blocks and 
 |------------------------|----------------------------------------|-----------------------|
 | `/autopickup`          | Toggle auto-pickup on/off for yourself | `autopickup.toggle`   |
 | `/autopickup reload`   | Reload the plugin configuration        | `autopickup.reload`   |
-| `/autopickup settings` | View current plugin settings           | `autopickup.settings` |
 
 ## Permissions
 
-| Permission | Description | Default |
-|------------|-------------|---------|
-| `autopickup.toggle` | Allow toggling auto-pickup on/off | All players |
-| `autopickup.reload` | Allow reloading the configuration | Operators only |
-| `autopickup.settings` | Allow viewing plugin settings | All players |
+| Permission            | Description                       | Default        |
+|-----------------------|-----------------------------------|----------------|
+| `autopickup.toggle`   | Allow toggling auto-pickup on/off | All players    |
+| `autopickup.reload`   | Allow reloading the configuration | Operators only |
+| `autopickup.settings` | Allow viewing plugin settings     | All players    |
 
 ## Configuration
 
@@ -80,31 +79,23 @@ autopickup:
 **Whitelist Mode** - Only specified items will be auto-picked up:
 
 ```yaml
-  # Enable whitelist mode (only pickup whitelisted items)
-  whitelist-enabled: true
-
-  # Whitelist - Only these blocks/items will be auto-picked up
+  # Whitelist - Only these blocks/items will be auto-picked up (when whitelist-enabled: true)
   # Supports partial matching (e.g., "Ore" matches all ore types)
+  
   whitelist:
-    - "Ore_Copper"
-    - "Ore_Iron"
-    - "Ore_Gold"
-    - "Ore_Diamond"
-    - "Ingredient_Bone_Fragment"
+     - "Ore_Copper_Shale"
+     - "Ingredient_Bone_Fragment"
 ```
 
 **Blacklist Mode** - Everything except specified items will be auto-picked up:
 
 ```yaml
-  # Enable blacklist mode (pickup everything except blacklisted items)
-  blacklist-enabled: true
-
-  # Blacklist - These blocks/items will NOT be auto-picked up
+  # Blacklist - These blocks/items will NOT be auto-picked up (when blacklist-enabled: true)
   # Supports partial matching (e.g., "Container" matches all containers)
+  
   blacklist:
-    - "Container_Chest"
-    - "Container_Barrel"
-    - "Ingredient_Sac_Venom"
+     - "Ingredient_Sac_Venom"
+     - "Ingredient_Fabric_Scrap_Linen"
 ```
 
 **Note:** Only one mode (whitelist OR blacklist) can be enabled at a time. If both are disabled, all items will be auto-picked up.
