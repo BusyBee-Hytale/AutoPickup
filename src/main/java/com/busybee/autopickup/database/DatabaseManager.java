@@ -29,6 +29,13 @@ public class DatabaseManager {
         try {
 
             Class.forName("org.sqlite.JDBC");
+
+            // Try to set native library path for modular environments
+            try {
+                System.setProperty("org.sqlite.lib.exportPath", new File(plugin.getResourcesFolder(), "native").getAbsolutePath());
+            } catch (Exception ignored) {
+            }
+
             connection = DriverManager.getConnection(databasePath);
 
             try (Statement stmt = connection.createStatement()) {
@@ -38,12 +45,17 @@ public class DatabaseManager {
                 stmt.execute("PRAGMA temp_store=MEMORY");
             }
             createTables();
-
-            LOGGER.atInfo().log("SQLite database initialized successfully at: " + databasePath);
         } catch (ClassNotFoundException e) {
             LOGGER.atSevere().log("SQLite JDBC driver not found: " + e.getMessage());
+            LOGGER.atSevere().log("Make sure sqlite-jdbc is properly included in the plugin JAR");
         } catch (SQLException e) {
             LOGGER.atSevere().log("Failed to initialize database: " + e.getMessage());
+            if (e.getCause() instanceof UnsatisfiedLinkError) {
+                LOGGER.atSevere().log("Native library loading failed. This may be due to module system restrictions.");
+                LOGGER.atSevere().log("Ensure the plugin JAR includes SQLite native libraries and is properly shaded.");
+            }
+        } catch (Exception e) {
+            LOGGER.atSevere().log("Unexpected error during database initialization: " + e.getMessage());
         }
     }
 
@@ -65,8 +77,6 @@ public class DatabaseManager {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(createTableSQL);
             stmt.execute(createIndexSQL);
-
-            LOGGER.atInfo().log("Database tables created/verified");
         } catch (SQLException e) {
             LOGGER.atSevere().log("Failed to create database tables: " + e.getMessage());
         }
@@ -85,7 +95,6 @@ public class DatabaseManager {
             try {
                 if (!connection.isClosed()) {
                     connection.close();
-                    LOGGER.atInfo().log("Database connection closed");
                 }
             } catch (SQLException e) {
                 LOGGER.atWarning().log("Error closing database connection: " + e.getMessage());

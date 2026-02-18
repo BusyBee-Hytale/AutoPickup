@@ -45,8 +45,6 @@ public class PlayerDataManager {
                     LOGGER.atWarning().log("Invalid UUID in database: " + rs.getString("uuid"));
                 }
             }
-
-            LOGGER.atInfo().log("Loaded " + count + " player settings from database");
         } catch (SQLException e) {
             LOGGER.atSevere().log("Failed to load player data from database", e);
         }
@@ -137,7 +135,6 @@ public class PlayerDataManager {
 
             if (savedCount > 0) {
                 stmt.executeBatch();
-                LOGGER.atInfo().log("Saved " + savedCount + " player settings to database");
             }
         } catch (SQLException e) {
             LOGGER.atSevere().log("Failed to save all player data to database", e);

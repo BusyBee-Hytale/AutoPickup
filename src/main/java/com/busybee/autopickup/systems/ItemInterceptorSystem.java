@@ -185,13 +185,11 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
     }
 
     private BreakBlockHandler.BreakEntry findNearbyBreak(Vector3i itemPos) {
-        // First try exact match for performance
         BreakBlockHandler.BreakEntry exactMatch = plugin.getBreakBlockHandler().getRecentBreak(itemPos);
         if (exactMatch != null) {
             return exactMatch;
         }
 
-        // Search within configured radius for scattered drops (mobs, trees)
         int radius = plugin.getConfig().getInt("autopickup.pickup-radius", 3);
         return plugin.getBreakBlockHandler().findNearbyBreak(itemPos, radius);
     }

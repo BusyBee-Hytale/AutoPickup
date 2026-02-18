@@ -118,7 +118,7 @@ public class NotificationHelper {
         if (coloredText.contains("<gray>") || coloredText.contains("<grey>")) return "#808080";
         if (coloredText.contains("<black>")) return "#000000";
 
-        return "#ffffff"; // default white
+        return "#ffffff";
     }
 
     private static String extractText(String coloredText) {

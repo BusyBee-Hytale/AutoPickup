@@ -31,7 +31,6 @@ public class HStats {
 
         this.serverUUID = getServerUUID();
         if (this.serverUUID == null) {
-            System.out.println("[HStats] Metrics are disabled on this server.");
             return;
         }
 
@@ -57,19 +56,12 @@ public class HStats {
     }
 
     private void addModToServer() {
-        System.out.println("[HStats] Adding mod to server metrics...");
-
         Map<String, String> arguments = new HashMap<>();
         arguments.put("server_uuid", this.serverUUID);
         arguments.put("plugin_uuid", this.modUUID);
         arguments.put("plugin_version", this.modVersion);
 
-        boolean success = sendRequest(URL_BASE + "server/add-plugin", arguments);
-        if (success) {
-            System.out.println("[HStats] Successfully registered mod with metrics server.");
-        } else {
-            System.out.println("[HStats] Failed to register mod with metrics server.");
-        }
+        sendRequest(URL_BASE + "server/add-plugin", arguments);
     }
 
     private String getServerUUID() {

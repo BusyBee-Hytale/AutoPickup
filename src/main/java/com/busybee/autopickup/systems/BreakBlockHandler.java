@@ -123,23 +123,19 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         BreakEntry closestEntry = null;
         double closestDistanceSq = Double.MAX_VALUE;
 
-        // Search for the closest recent break within radius
         for (Map.Entry<Vector3i, BreakEntry> entry : recentBreaks.entrySet()) {
             Vector3i breakPos = entry.getKey();
             BreakEntry breakEntry = entry.getValue();
 
-            // Check if entry is still valid (not expired)
             if (now - breakEntry.timestamp > expiryTime) {
                 continue;
             }
 
-            // Calculate distance
             int dx = itemPos.x - breakPos.x;
             int dy = itemPos.y - breakPos.y;
             int dz = itemPos.z - breakPos.z;
             double distanceSq = dx * dx + dy * dy + dz * dz;
 
-            // Check if within radius and closer than previous matches
             if (distanceSq <= radius * radius && distanceSq < closestDistanceSq) {
                 closestEntry = breakEntry;
                 closestDistanceSq = distanceSq;
