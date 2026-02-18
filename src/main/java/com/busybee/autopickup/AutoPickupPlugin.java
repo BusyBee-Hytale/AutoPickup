@@ -37,11 +37,12 @@ public class AutoPickupPlugin extends JavaPlugin {
 
     @Override
     protected void setup() {
-        new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "1.0.0");
-
         YamlConfig.init(this);
         this.config = new YamlConfig("config.yml");
         this.messages = new YamlConfig("messages.yml");
+
+        boolean verboseLogging = this.config.getBoolean("hstats.verbose-logging", false);
+        new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "${plugin_version}", verboseLogging);
         this.databaseManager = new DatabaseManager(this);
         this.databaseManager.initialize();
         this.playerDataManager = new PlayerDataManager(this, databaseManager);

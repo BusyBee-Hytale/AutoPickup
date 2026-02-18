@@ -24,10 +24,13 @@ public class HStats {
     private final String modUUID;
     private final String modVersion;
     private final String serverUUID;
+    private final boolean verboseLogging;
+    private boolean firstMetricsSent = false;
 
-    public HStats(String modUUID, String modVersion) {
+    public HStats(String modUUID, String modVersion, boolean verboseLogging) {
         this.modUUID = modUUID;
         this.modVersion = modVersion;
+        this.verboseLogging = verboseLogging;
 
         this.serverUUID = getServerUUID();
         if (this.serverUUID == null) {
@@ -39,8 +42,12 @@ public class HStats {
         HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(this::logMetrics, 1, 1, TimeUnit.MINUTES);
     }
 
+    public HStats(String modUUID, String modVersion) {
+        this(modUUID, modVersion, false);
+    }
+
     public HStats(String modUUID) {
-        this(modUUID, "Unknown");
+        this(modUUID, "Unknown", false);
     }
 
     private void logMetrics() {
@@ -52,7 +59,14 @@ public class HStats {
         arguments.put("java_version", System.getProperty("java.version"));
         arguments.put("cores", String.valueOf(Runtime.getRuntime().availableProcessors()));
 
-        sendRequest(URL_BASE + "server/update-server", arguments);
+        boolean success = sendRequest(URL_BASE + "server/update-server", arguments);
+
+        if (success && (!firstMetricsSent || verboseLogging)) {
+            System.out.println("[HStats] Successfully sent metrics (HTTP 204)");
+            firstMetricsSent = true;
+        } else if (!success && !firstMetricsSent) {
+            System.out.println("[HStats] Failed to send metrics");
+        }
     }
 
     private void addModToServer() {
@@ -61,7 +75,12 @@ public class HStats {
         arguments.put("plugin_uuid", this.modUUID);
         arguments.put("plugin_version", this.modVersion);
 
-        sendRequest(URL_BASE + "server/add-plugin", arguments);
+        boolean success = sendRequest(URL_BASE + "server/add-plugin", arguments);
+        if (success) {
+            System.out.println("[HStats] Connected to metrics service");
+        } else {
+            System.out.println("[HStats] Failed to connect to metrics service");
+        }
     }
 
     private String getServerUUID() {

@@ -60,3 +60,13 @@ autopickup:
   blacklist:
     - "Ingredient_Sac_Venom"
     - "Ingredient_Fabric_Scrap_Linen"
+
+# ====================================================
+# HStats Metrics Settings
+# ====================================================
+
+hstats:
+  # Show detailed logging for metrics submissions
+  # When false: Only logs once on startup to confirm connection
+  # When true: Logs every minute when metrics are sent successfully
+  verbose-logging: false
