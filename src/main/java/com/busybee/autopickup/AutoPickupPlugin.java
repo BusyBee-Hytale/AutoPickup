@@ -3,7 +3,6 @@ package com.busybee.autopickup;
 import ai.kodari.hylib.commons.scheduler.Scheduler;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.commands.AutoPickupCommand;
-import com.busybee.autopickup.database.DatabaseManager;
 import com.busybee.autopickup.manager.PlayerDataManager;
 import com.busybee.autopickup.systems.BreakBlockHandler;
 import com.busybee.autopickup.systems.ItemInterceptorSystem;
@@ -22,7 +21,6 @@ public class AutoPickupPlugin extends JavaPlugin {
 
     private YamlConfig config;
     private YamlConfig messages;
-    private DatabaseManager databaseManager;
     private PlayerDataManager playerDataManager;
     private BreakBlockHandler breakBlockHandler;
 
@@ -43,9 +41,7 @@ public class AutoPickupPlugin extends JavaPlugin {
 
         boolean verboseLogging = this.config.getBoolean("hstats.verbose-logging", false);
         new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "2026.2.6", verboseLogging);
-        this.databaseManager = new DatabaseManager(this);
-        this.databaseManager.initialize();
-        this.playerDataManager = new PlayerDataManager(this, databaseManager);
+        this.playerDataManager = new PlayerDataManager(this);
         this.breakBlockHandler = new BreakBlockHandler();
 
         getEntityStoreRegistry().registerSystem(breakBlockHandler);
@@ -67,10 +63,6 @@ public class AutoPickupPlugin extends JavaPlugin {
             playerDataManager.saveAllData();
         }
 
-        if (databaseManager != null) {
-            databaseManager.close();
-        }
-
         if (breakBlockHandler != null) {
             breakBlockHandler.shutdown();
         }
@@ -89,9 +81,6 @@ public class AutoPickupPlugin extends JavaPlugin {
     }
     public BreakBlockHandler getBreakBlockHandler() {
         return breakBlockHandler;
-    }
-    public DatabaseManager getDatabaseManager() {
-        return databaseManager;
     }
 
     public File getResourcesFolder() {

@@ -11,7 +11,7 @@ autopickup:
   enabled: true
 
   # Whether autopickup is enabled by default for new players
-  default-enabled: false
+  default-enabled: true
 
   # How long to keep break/death locations in memory (in milliseconds)
   # Items spawning after this time won't be auto-picked up
