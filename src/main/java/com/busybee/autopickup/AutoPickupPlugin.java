@@ -7,6 +7,7 @@ import com.busybee.autopickup.manager.PlayerDataManager;
 import com.busybee.autopickup.systems.BreakBlockHandler;
 import com.busybee.autopickup.systems.ItemInterceptorSystem;
 import com.busybee.autopickup.systems.MobDropListener;
+import com.busybee.autopickup.util.ConfigValidator;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
@@ -38,6 +39,10 @@ public class AutoPickupPlugin extends JavaPlugin {
         YamlConfig.init(this);
         this.config = new YamlConfig("config.yml");
         this.messages = new YamlConfig("messages.yml");
+
+        // Validate and repair configuration
+        ConfigValidator validator = new ConfigValidator(this);
+        validator.validateAndRepair();
 
         boolean verboseLogging = this.config.getBoolean("hstats.verbose-logging", false);
         new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "2026.2.6", verboseLogging);

@@ -32,16 +32,22 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         private final String blockId;
         private final long timestamp;
         private final boolean mobDrop;
+        private final boolean treeBlock;
 
         BreakEntry(UUID playerUUID, String blockId) {
-            this(playerUUID, blockId, false);
+            this(playerUUID, blockId, false, false);
         }
 
         BreakEntry(UUID playerUUID, String blockId, boolean mobDrop) {
+            this(playerUUID, blockId, mobDrop, false);
+        }
+
+        BreakEntry(UUID playerUUID, String blockId, boolean mobDrop, boolean treeBlock) {
             this.playerUUID = playerUUID;
             this.blockId = blockId;
             this.timestamp = System.currentTimeMillis();
             this.mobDrop = mobDrop;
+            this.treeBlock = treeBlock;
         }
 
         public UUID getPlayerUUID() {
@@ -55,6 +61,9 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         }
         public boolean isMobDrop() {
             return mobDrop;
+        }
+        public boolean isTreeBlock() {
+            return treeBlock;
         }
 
         @Nullable
@@ -94,7 +103,26 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
             return;
         }
 
-        recentBreaks.put(blockPos, new BreakEntry(playerUUID, blockId));
+        boolean isTreeBlock = isTreeRelatedBlock(blockId);
+        recentBreaks.put(blockPos, new BreakEntry(playerUUID, blockId, false, isTreeBlock));
+    }
+
+    private boolean isTreeRelatedBlock(String blockId) {
+        if (blockId == null) {
+            return false;
+        }
+
+        if (!AutoPickupPlugin.getInstance().getConfig().getBoolean("autopickup.tree-detection-enabled", true)) {
+            return false;
+        }
+
+        String blockIdLower = blockId.toLowerCase();
+        for (String pattern : AutoPickupPlugin.getInstance().getConfig().getStringList("autopickup.tree-blocks")) {
+            if (blockIdLower.contains(pattern.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nonnull
@@ -104,7 +132,7 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     @Nullable
-    public BreakEntry getRecentBreak(Vector3i position) {
+    public synchronized BreakEntry getRecentBreak(Vector3i position) {
         BreakEntry entry = recentBreaks.get(position);
         if (entry != null) {
             long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
@@ -116,7 +144,7 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     @Nullable
-    public BreakEntry findNearbyBreak(Vector3i itemPos, int radius) {
+    public synchronized BreakEntry findNearbyBreak(Vector3i itemPos, int radius) {
         long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
         long now = System.currentTimeMillis();
 
@@ -145,11 +173,11 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         return closestEntry;
     }
 
-    public void markMobDeath(Vector3i position, UUID playerUUID) {
+    public synchronized void markMobDeath(Vector3i position, UUID playerUUID) {
         recentBreaks.put(position, new BreakEntry(playerUUID, "MOB_DROP", true));
     }
 
-    private void cleanupOldEntries() {
+    private synchronized void cleanupOldEntries() {
         long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
         long now = System.currentTimeMillis();
         recentBreaks.entrySet().removeIf(entry -> (now - entry.getValue().timestamp) > expiryTime);

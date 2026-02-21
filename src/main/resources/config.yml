@@ -21,6 +21,30 @@ autopickup:
   # Larger values help with scattered drops from mobs and trees but may pickup unintended items
   pickup-radius: 3
 
+  # ====================================================
+  # Tree Detection Settings
+  # ====================================================
+
+  # Enable intelligent tree detection for better multi-block structure handling
+  # When enabled, breaking tree-related blocks will use expanded pickup radius
+  tree-detection-enabled: true
+
+  # Expanded radius for tree-related drops (logs, leaves, branches)
+  # Trees scatter items more than regular blocks, so a larger radius helps
+  tree-pickup-radius: 5
+
+  # Block IDs that are considered part of trees (supports partial matching)
+  # These blocks will trigger the expanded tree pickup radius
+  tree-blocks:
+    - "Log"
+    - "Leaf"
+    - "Branch"
+    - "Palm"
+    - "Oak"
+    - "Birch"
+    - "Spruce"
+    - "Pine"
+
   # Disable autopickup when players are in creative mode
   disable-in-creative: true
 

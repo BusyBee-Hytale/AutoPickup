@@ -20,10 +20,14 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ItemInterceptorSystem extends RefSystem<EntityStore> {
 
     private final AutoPickupPlugin plugin;
+    private final Set<Ref<EntityStore>> processedItems = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public ItemInterceptorSystem(AutoPickupPlugin plugin) {
         this.plugin = plugin;
@@ -43,6 +47,11 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
         if (addReason != AddReason.SPAWN) {
+            return;
+        }
+
+        // Prevent double-processing of the same item entity
+        if (!processedItems.add(ref)) {
             return;
         }
 
@@ -129,6 +138,8 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             @Nonnull Store<EntityStore> store,
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
+        // Clean up tracking set when item is removed
+        processedItems.remove(ref);
     }
 
     private Player getPlayerEntity(PlayerRef playerRef, Store<EntityStore> store) {
@@ -143,6 +154,11 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
 
         Store<EntityStore> refStore = playerEntityRef.getStore();
         if (refStore == null) {
+            return null;
+        }
+
+        // Cross-world validation: ensure player and item are in the same world
+        if (refStore != store) {
             return null;
         }
 
@@ -190,7 +206,22 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return exactMatch;
         }
 
+        // Use expanded radius for tree blocks if tree detection is enabled
         int radius = plugin.getConfig().getInt("autopickup.pickup-radius", 3);
-        return plugin.getBreakBlockHandler().findNearbyBreak(itemPos, radius);
+        BreakBlockHandler.BreakEntry nearbyEntry = plugin.getBreakBlockHandler().findNearbyBreak(itemPos, radius);
+
+        // If no match found with normal radius and tree detection is enabled, try tree radius
+        if (nearbyEntry == null && plugin.getConfig().getBoolean("autopickup.tree-detection-enabled", true)) {
+            int treeRadius = plugin.getConfig().getInt("autopickup.tree-pickup-radius", 5);
+            if (treeRadius > radius) {
+                nearbyEntry = plugin.getBreakBlockHandler().findNearbyBreak(itemPos, treeRadius);
+                // Only accept tree blocks with the expanded radius
+                if (nearbyEntry != null && !nearbyEntry.isTreeBlock()) {
+                    return null;
+                }
+            }
+        }
+
+        return nearbyEntry;
     }
 }
