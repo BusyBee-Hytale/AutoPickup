@@ -1,0 +1,10 @@
+# AutoPickup Player Data Storage
+# This file stores player settings for the AutoPickup plugin
+
+# Format:
+# players:
+#   <player-uuid>:
+#     name: <player-uuid>
+#     autopickup-enabled: <true/false>
+
+players: {}
