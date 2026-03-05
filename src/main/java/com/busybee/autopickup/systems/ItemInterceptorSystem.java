@@ -214,11 +214,8 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
         if (nearbyEntry == null && plugin.getConfig().getBoolean("autopickup.tree-detection-enabled", true)) {
             int treeRadius = plugin.getConfig().getInt("autopickup.tree-pickup-radius", 5);
             if (treeRadius > radius) {
-                nearbyEntry = plugin.getBreakBlockHandler().findNearbyBreak(itemPos, treeRadius);
-                // Only accept tree blocks with the expanded radius
-                if (nearbyEntry != null && !nearbyEntry.isTreeBlock()) {
-                    return null;
-                }
+                // Specifically search for tree breaks in the expanded radius
+                nearbyEntry = plugin.getBreakBlockHandler().findNearbyBreak(itemPos, treeRadius, true);
             }
         }
 

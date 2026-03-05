@@ -144,7 +144,12 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     @Nullable
-    public synchronized BreakEntry findNearbyBreak(Vector3i itemPos, int radius) {
+    public BreakEntry findNearbyBreak(Vector3i itemPos, int radius) {
+        return findNearbyBreak(itemPos, radius, false);
+    }
+
+    @Nullable
+    public synchronized BreakEntry findNearbyBreak(Vector3i itemPos, int radius, boolean treeOnly) {
         long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
         long now = System.currentTimeMillis();
 
@@ -159,12 +164,16 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
                 continue;
             }
 
+            if (treeOnly && !breakEntry.isTreeBlock()) {
+                continue;
+            }
+
             int dx = itemPos.x - breakPos.x;
             int dy = itemPos.y - breakPos.y;
             int dz = itemPos.z - breakPos.z;
             double distanceSq = dx * dx + dy * dy + dz * dz;
 
-            if (distanceSq <= radius * radius && distanceSq < closestDistanceSq) {
+            if (distanceSq <= (double) radius * radius && distanceSq < closestDistanceSq) {
                 closestEntry = breakEntry;
                 closestDistanceSq = distanceSq;
             }

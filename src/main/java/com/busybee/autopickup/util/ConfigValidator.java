@@ -30,9 +30,9 @@ public class ConfigValidator {
         validateBoolean(config, "hstats.verbose-logging", false);
 
         // Validate integer ranges
-        validateIntRange(config, "autopickup.entry-expiry-ms", 500L, 100L, 10000L);
-        validateIntRange(config, "autopickup.pickup-radius", 3, 1, 10);
-        validateIntRange(config, "autopickup.tree-pickup-radius", 5, 1, 15);
+        validateIntRange(config, "autopickup.entry-expiry-ms", 3000L, 100L, 30000L);
+        validateIntRange(config, "autopickup.pickup-radius", 3, 1, 20);
+        validateIntRange(config, "autopickup.tree-pickup-radius", 15, 1, 50);
         validateIntRange(config, "autopickup.pickup-delay-ticks", 0, 0, 100);
 
         // Validate notification type enums

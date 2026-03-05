@@ -15,7 +15,7 @@ autopickup:
 
   # How long to keep break/death locations in memory (in milliseconds)
   # Items spawning after this time won't be auto-picked up
-  entry-expiry-ms: 500
+  entry-expiry-ms: 3000
 
   # Radius in blocks to search for recent breaks/deaths when items spawn
   # Larger values help with scattered drops from mobs and trees but may pickup unintended items
@@ -31,19 +31,26 @@ autopickup:
 
   # Expanded radius for tree-related drops (logs, leaves, branches)
   # Trees scatter items more than regular blocks, so a larger radius helps
-  tree-pickup-radius: 5
+  tree-pickup-radius: 15
 
   # Block IDs that are considered part of trees (supports partial matching)
   # These blocks will trigger the expanded tree pickup radius
   tree-blocks:
     - "Log"
     - "Leaf"
+    - "Leaves"
     - "Branch"
     - "Palm"
     - "Oak"
     - "Birch"
     - "Spruce"
     - "Pine"
+    - "Bamboo"
+    - "Acacia"
+    - "Fruit"
+    - "Sapling"
+    - "Seed"
+    - "Wood"
 
   # Disable autopickup when players are in creative mode
   disable-in-creative: true
