@@ -4,6 +4,7 @@ import ai.kodari.hylib.commons.message.Messenger;
 import ai.kodari.hylib.commons.util.ChatUtil;
 import ai.kodari.hylib.commons.util.Titles;
 import com.busybee.autopickup.AutoPickupPlugin;
+import com.busybee.autopickup.util.ConfigValidator;
 import com.busybee.autopickup.util.NotificationHelper;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
@@ -33,6 +34,16 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
             @Nonnull PlayerRef playerRef,
             @Nonnull World world
     ) {
+        if (!PermissionsModule.get().hasPermission(playerRef.getUuid(), "autopickup.toggle")) {
+            Titles.player(
+                playerRef,
+                ChatUtil.parse(plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission")),
+                ChatUtil.parse(plugin.getMessages().getString("titles.no-permission-subtitle", "<white>You don't have access to toggle auto-pickup")),
+                false
+            );
+            return;
+        }
+
         if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
             Titles.player(
                 playerRef,
@@ -83,16 +94,29 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
                 @Nonnull PlayerRef playerRef,
                 @Nonnull World world
         ) {
-            PermissionsModule perms = PermissionsModule.get();
-            if (!perms.hasPermission(playerRef.getUuid(), "autopickup.reload")) {
-                Messenger.sendMessage(playerRef, "<color:#ff0000>You don't have permission to reload the config.");
+            if (!PermissionsModule.get().hasPermission(playerRef.getUuid(), "autopickup.reload")) {
+                Titles.player(
+                    playerRef,
+                    ChatUtil.parse(plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission")),
+                    ChatUtil.parse(plugin.getMessages().getString("titles.no-permission-reload-subtitle", "<white>You don't have access to reload the config")),
+                    false
+                );
                 return;
             }
 
             plugin.getConfig().reload();
             plugin.getMessages().reload();
+            
+            // Re-validate the reloaded configuration
+            new ConfigValidator(plugin).validateAndRepair();
+            
+            AutoPickupPlugin.LOGGER.atInfo().log("Configuration and messages reloaded.");
 
-            Messenger.sendMessage(playerRef, "<color:#22c55e>[AutoPickup] <white>Configuration and messages reloaded successfully!");
+            String prefix = plugin.getMessages().getString("chat.prefix", "<color:#22c55e>[AutoPickup]");
+            String successMessage = plugin.getMessages().getString("chat.reload-success", "{prefix} <white>Configuration and messages reloaded successfully!")
+                    .replace("{prefix}", prefix);
+            
+            Messenger.sendMessage(playerRef, successMessage);
         }
     }
 }
