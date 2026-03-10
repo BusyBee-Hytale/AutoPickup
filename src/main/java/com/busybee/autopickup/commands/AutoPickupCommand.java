@@ -1,16 +1,14 @@
 package com.busybee.autopickup.commands;
 
 import ai.kodari.hylib.commons.message.Messenger;
-import ai.kodari.hylib.commons.util.ChatUtil;
-import ai.kodari.hylib.commons.util.Titles;
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.busybee.autopickup.util.ConfigValidator;
+import com.busybee.autopickup.util.Permissions;
 import com.busybee.autopickup.util.NotificationHelper;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
-import com.hypixel.hytale.server.core.permissions.PermissionsModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -34,22 +32,20 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
             @Nonnull PlayerRef playerRef,
             @Nonnull World world
     ) {
-        if (!PermissionsModule.get().hasPermission(playerRef.getUuid(), "autopickup.toggle")) {
-            Titles.player(
+        if (!Permissions.canToggle(playerRef)) {
+            NotificationHelper.sendNoPermissionNotification(
                 playerRef,
-                ChatUtil.parse(plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.no-permission-subtitle", "<white>You don't have access to toggle auto-pickup")),
-                false
+                plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
+                plugin.getMessages().getString("titles.no-permission-subtitle", "<white>You don't have access to toggle auto-pickup")
             );
             return;
         }
 
         if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
-            Titles.player(
+            NotificationHelper.sendNoPermissionNotification(
                 playerRef,
-                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled")),
-                ChatUtil.parse(plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")),
-                false
+                plugin.getMessages().getString("titles.plugin-disabled", "<color:#ff0000>AutoPickup Disabled"),
+                plugin.getMessages().getString("titles.plugin-disabled-subtitle", "<white>Plugin is disabled by administrator")
             );
             return;
         }
@@ -94,20 +90,18 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
                 @Nonnull PlayerRef playerRef,
                 @Nonnull World world
         ) {
-            if (!PermissionsModule.get().hasPermission(playerRef.getUuid(), "autopickup.reload")) {
-                Titles.player(
+            if (!Permissions.canReload(playerRef)) {
+                NotificationHelper.sendNoPermissionNotification(
                     playerRef,
-                    ChatUtil.parse(plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission")),
-                    ChatUtil.parse(plugin.getMessages().getString("titles.no-permission-reload-subtitle", "<white>You don't have access to reload the config")),
-                    false
+                    plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
+                    plugin.getMessages().getString("titles.no-permission-reload-subtitle", "<white>You don't have access to reload the config")
                 );
                 return;
             }
 
             plugin.getConfig().reload();
             plugin.getMessages().reload();
-            
-            // Re-validate the reloaded configuration
+
             new ConfigValidator(plugin).validateAndRepair();
             
             AutoPickupPlugin.LOGGER.atInfo().log("Configuration and messages reloaded.");

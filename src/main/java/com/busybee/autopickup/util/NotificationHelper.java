@@ -7,7 +7,6 @@ import ai.kodari.hylib.commons.util.Titles;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.hypixel.hytale.protocol.packets.interface_.NotificationStyle;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 
@@ -60,26 +59,22 @@ public class NotificationHelper {
 
     public static void sendToggleNotification(PlayerRef playerRef, String notificationType, String title, String subtitle) {
         try {
-            boolean isEnabled = title.contains("Enabled");
-            String cleanTitle = extractText(title);
-            String cleanSubtitle = extractText(subtitle);
-            String titleColor = extractColor(title);
-
             switch (notificationType.toUpperCase()) {
                 case "TITLE":
                     Titles.player(
                         playerRef,
-                        Message.raw(cleanTitle).color(titleColor),
-                        Message.raw(cleanSubtitle).color("#ffffff"),
+                        ChatUtil.parse(title),
+                        ChatUtil.parse(subtitle),
                         false
                     );
                     break;
 
                 case "NOTIFICATION":
+                    boolean isEnabled = title.contains("Enabled");
                     Notifications.player(
                             playerRef,
-                            Message.raw(cleanTitle).color(titleColor),
-                            Message.raw(cleanSubtitle).color("#ffffff"),
+                            ChatUtil.parse(title),
+                            ChatUtil.parse(subtitle),
                             null,
                             isEnabled ? NotificationStyle.Success : NotificationStyle.Warning
                     );
@@ -88,7 +83,7 @@ public class NotificationHelper {
                 case "CHAT":
                     AutoPickupPlugin plugin = AutoPickupPlugin.getInstance();
                     String prefix = plugin.getMessages().getString("chat.prefix", "<color:#22c55e>[AutoPickup]");
-                    Messenger.sendMessage(playerRef, prefix + " " + cleanTitle);
+                    Messenger.sendMessage(playerRef, prefix + " " + title);
                     break;
 
                 case "NONE":
@@ -101,28 +96,18 @@ public class NotificationHelper {
         }
     }
 
-    private static String extractColor(String coloredText) {
-        if (coloredText.contains("<color:#")) {
-            int start = coloredText.indexOf("#");
-            int end = coloredText.indexOf(">", start);
-            if (start != -1 && end != -1) {
-                return coloredText.substring(start, end);
-            }
+    public static void sendNoPermissionNotification(PlayerRef playerRef, String title, String subtitle) {
+        try {
+            Titles.player(
+                playerRef,
+                ChatUtil.parse(title),
+                ChatUtil.parse(subtitle),
+                false
+            );
+        } catch (Exception e) {
+            AutoPickupPlugin.LOGGER.atWarning().log("Failed to send no-permission notification: " + e.getMessage());
+            Messenger.sendMessage(playerRef, title + " " + subtitle);
         }
-
-        if (coloredText.contains("<white>")) return "#ffffff";
-        if (coloredText.contains("<red>")) return "#ff0000";
-        if (coloredText.contains("<green>")) return "#00ff00";
-        if (coloredText.contains("<blue>")) return "#0000ff";
-        if (coloredText.contains("<yellow>")) return "#ffff00";
-        if (coloredText.contains("<gray>") || coloredText.contains("<grey>")) return "#808080";
-        if (coloredText.contains("<black>")) return "#000000";
-
-        return "#ffffff";
     }
 
-    private static String extractText(String coloredText) {
-        String text = coloredText.replaceAll("<color:[^>]+>", "").replaceAll("<[^>]+>", "");
-        return text.trim();
-    }
 }
