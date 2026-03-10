@@ -1,12 +1,12 @@
 package com.busybee.autopickup.util;
 
 import ai.kodari.hylib.commons.message.Messenger;
-import ai.kodari.hylib.commons.util.ChatUtil;
 import ai.kodari.hylib.commons.util.Notifications;
 import ai.kodari.hylib.commons.util.Titles;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.hypixel.hytale.protocol.packets.interface_.NotificationStyle;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 
@@ -38,8 +38,8 @@ public class NotificationHelper {
                 
                 Notifications.player(
                         playerRef,
-                        ChatUtil.parse(pickupTitle),
-                        ChatUtil.parse(pickupMessage),
+                        createMessage(pickupTitle),
+                        createMessage(pickupMessage),
                         null,
                         NotificationStyle.Success
                 );
@@ -48,8 +48,8 @@ public class NotificationHelper {
             case "TITLE":
                 Titles.player(
                         playerRef,
-                        ChatUtil.parse("<color:#22c55e>+" + quantity),
-                        ChatUtil.parse("<white>" + itemName),
+                        createMessage("<color:#22c55e>+" + quantity),
+                        createMessage("<white>" + itemName),
                         false
                 );
                 break;
@@ -75,8 +75,8 @@ public class NotificationHelper {
                 case "TITLE":
                     Titles.player(
                         playerRef,
-                        ChatUtil.parse(title),
-                        ChatUtil.parse(subtitle),
+                        createMessage(title),
+                        createMessage(subtitle),
                         false
                     );
                     break;
@@ -85,8 +85,8 @@ public class NotificationHelper {
                     boolean isEnabled = title.toLowerCase().contains("enabled");
                     Notifications.player(
                             playerRef,
-                            ChatUtil.parse(title),
-                            ChatUtil.parse(subtitle),
+                            createMessage(title),
+                            createMessage(subtitle),
                             null,
                             isEnabled ? NotificationStyle.Success : NotificationStyle.Warning
                     );
@@ -112,8 +112,8 @@ public class NotificationHelper {
         try {
             Titles.player(
                 playerRef,
-                ChatUtil.parse(title),
-                ChatUtil.parse(subtitle),
+                createMessage(title),
+                createMessage(subtitle),
                 false
             );
         } catch (Exception e) {
@@ -125,6 +125,39 @@ public class NotificationHelper {
     public static void sendSafeChat(PlayerRef playerRef, String message) {
         if (playerRef == null || !playerRef.isValid()) return;
         Messenger.sendMessage(playerRef, message);
+    }
+
+    private static Message createMessage(String input) {
+        if (input == null) return Message.raw("");
+        String text = extractText(input);
+        String color = extractColor(input);
+        return Message.raw(text).color(color);
+    }
+
+    private static String extractColor(String input) {
+        if (input.contains("<color:#")) {
+            int start = input.indexOf("#");
+            int end = input.indexOf(">", start);
+            if (start != -1 && end != -1) {
+                return input.substring(start, end);
+            }
+        }
+        
+        if (input.contains("<white>")) return "#ffffff";
+        if (input.contains("<red>")) return "#ff0000";
+        if (input.contains("<green>")) return "#00ff00";
+        if (input.contains("<blue>")) return "#0000ff";
+        if (input.contains("<yellow>")) return "#ffff00";
+        
+        return "#ffffff"; // Default
+    }
+
+    private static String extractText(String input) {
+        if (input == null) return "";
+        // Remove color tags
+        String text = input.replaceAll("<color:[^>]+>", "");
+        text = text.replaceAll("<[^>]+>", "");
+        return text.trim();
     }
 
     private static com.hypixel.hytale.server.core.entity.entities.Player getPlayer(PlayerRef playerRef) {
