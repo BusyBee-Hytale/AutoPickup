@@ -2,6 +2,7 @@ package com.busybee.autopickup.systems;
 
 import com.busybee.autopickup.AutoPickupPlugin;
 import com.busybee.autopickup.util.NotificationHelper;
+import com.busybee.autopickup.util.Permissions;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
@@ -102,6 +103,10 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
 
         Player player = getPlayerEntity(playerRef, store);
         if (player == null) {
+            return;
+        }
+
+        if (!Permissions.canToggle(player)) {
             return;
         }
 

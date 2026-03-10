@@ -14,7 +14,9 @@
   "ServerVersion": "*",
   "Main": "com.busybee.autopickup.AutoPickupPlugin",
   "Dependencies": {},
-  "OptionalDependencies": {},
+  "OptionalDependencies": {
+    "LuckPerms:LuckPerms": "*"
+  },
   "LoadBefore": {},
   "DisabledByDefault": false,
   "IncludesAssetPack": false,

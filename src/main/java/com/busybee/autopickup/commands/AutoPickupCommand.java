@@ -22,6 +22,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
     public AutoPickupCommand(AutoPickupPlugin plugin) {
         super("autopickup", "Toggle AutoPickup or manage settings");
         this.plugin = plugin;
+        requirePermission(Permissions.TOGGLE);
     }
 
     @Override
@@ -32,7 +33,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
             @Nonnull PlayerRef playerRef,
             @Nonnull World world
     ) {
-        if (!Permissions.canToggle(playerRef)) {
+        if (!Permissions.canToggle(ctx.sender())) {
             NotificationHelper.sendNoPermissionNotification(
                 playerRef,
                 plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
@@ -80,6 +81,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
         public ReloadSubCommand(AutoPickupPlugin plugin) {
             super("reload", "Reload configuration files");
             this.plugin = plugin;
+            requirePermission(Permissions.RELOAD);
         }
 
         @Override
@@ -90,7 +92,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
                 @Nonnull PlayerRef playerRef,
                 @Nonnull World world
         ) {
-            if (!Permissions.canReload(playerRef)) {
+            if (!Permissions.canReload(ctx.sender())) {
                 NotificationHelper.sendNoPermissionNotification(
                     playerRef,
                     plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
