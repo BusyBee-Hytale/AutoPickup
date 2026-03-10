@@ -1,16 +1,17 @@
 titles:
   enabled: "<color:#22c55e>AutoPickup Enabled"
   enabled-subtitle: "<white>Items will be automatically picked up"
-  
+
   disabled: "<color:#ff0000>AutoPickup Disabled"
   disabled-subtitle: "<white>Items will drop normally"
-  
+
   plugin-disabled: "<color:#ff0000>AutoPickup Disabled"
   plugin-disabled-subtitle: "<white>Plugin is disabled by administrator"
-  
+
   no-permission: "<color:#ff0000>No Permission"
   no-permission-subtitle: "<white>You don't have access to toggle auto-pickup"
   no-permission-reload-subtitle: "<white>You don't have access to reload the config"
+  no-permission-settings-subtitle: "<white>You don't have access to view settings"
 
 notifications:
   pickup-title: "<color:#22c55e>Item Picked Up"
@@ -25,21 +26,21 @@ ui:
   page-title: "AutoPickup Settings"
   status-enabled: "<color:#22c55e>ENABLED"
   status-disabled: "<color:#ef4444>DISABLED"
-  
+
   section-status: "AutoPickup Status"
   section-radius: "Pickup Radius"
   section-notifications: "Notification Settings"
-  
+
   button-toggle: "Toggle"
   button-close: "Close"
-  
+
   label-radius-unit: "blocks"
   label-radius-description: "How far away items can be to get auto-picked up"
-  
+
   label-toggle-notif: "Toggle Notification Type"
   label-pickup-notif: "Pickup Notification Type"
   label-toggle-prefix: "Enable/Disable:"
   label-pickup-prefix: "Item Pickup:"
-  
+
   info-notification-types: "Notification types: TITLE, NOTIFICATION, CHAT, NONE"
   info-admin-change: "Contact an admin to change notification types"

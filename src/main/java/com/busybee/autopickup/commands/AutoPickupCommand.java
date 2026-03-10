@@ -112,7 +112,48 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
             String successMessage = plugin.getMessages().getString("chat.reload-success", "{prefix} <white>Configuration and messages reloaded successfully!")
                     .replace("{prefix}", prefix);
             
-            Messenger.sendMessage(playerRef, successMessage);
+            NotificationHelper.sendSafeChat(playerRef, successMessage);
+        }
+    }
+
+    public static class SettingsSubCommand extends AbstractPlayerCommand {
+
+        private final AutoPickupPlugin plugin;
+
+        public SettingsSubCommand(AutoPickupPlugin plugin) {
+            super("settings", "View current AutoPickup settings");
+            this.plugin = plugin;
+            requirePermission(Permissions.SETTINGS);
+        }
+
+        @Override
+        protected void execute(
+                @Nonnull CommandContext ctx,
+                @Nonnull Store<EntityStore> store,
+                @Nonnull Ref<EntityStore> ref,
+                @Nonnull PlayerRef playerRef,
+                @Nonnull World world
+        ) {
+            if (!Permissions.canViewSettings(ctx.sender())) {
+                NotificationHelper.sendNoPermissionNotification(
+                    playerRef,
+                    plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
+                    plugin.getMessages().getString("titles.no-permission-settings-subtitle", "<white>You don't have access to view settings")
+                );
+                return;
+            }
+
+            String prefix = plugin.getMessages().getString("chat.prefix", "<color:#22c55e>[AutoPickup]");
+            boolean enabled = plugin.getPlayerDataManager().isAutoPickupEnabled(playerRef.getUuid());
+            int radius = plugin.getConfig().getInt("autopickup.pickup-radius", 3);
+            String notification = plugin.getConfig().getString("autopickup.notification-type", "NOTIFICATION");
+
+            String message = prefix + " <white>Your Settings:\n" +
+                    "<white> - Status: " + (enabled ? "<color:#22c55e>ENABLED" : "<color:#ff0000>DISABLED") + "\n" +
+                    "<white> - Pickup Radius: <color:#eab308>" + radius + " blocks\n" +
+                    "<white> - Notifications: <color:#eab308>" + notification;
+
+            NotificationHelper.sendSafeChat(playerRef, message);
         }
     }
 }

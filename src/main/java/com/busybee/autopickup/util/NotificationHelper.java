@@ -17,17 +17,28 @@ public class NotificationHelper {
         YamlConfig messages = plugin.getMessages();
 
         String itemName = itemStack.getItemId();
-        int quantity = itemStack.getQuantity();
+        // Try to get a nicer name if possible
+        try {
+            if (itemStack.getItem() != null && itemStack.getItem().getTranslationProperties() != null) {
+                String translatedName = itemStack.getItem().getTranslationProperties().getName();
+                if (translatedName != null && !translatedName.isEmpty()) {
+                    itemName = translatedName;
+                }
+            }
+        } catch (Exception ignored) {}
 
-        String pickupMessage = messages.getString("notifications.pickup-message", "<white>+{quantity} {item}")
-                .replace("{quantity}", String.valueOf(quantity))
-                .replace("{item}", itemName);
+        int quantity = itemStack.getQuantity();
 
         switch (notificationType.toUpperCase()) {
             case "NOTIFICATION":
+                String pickupTitle = messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up");
+                String pickupMessage = messages.getString("notifications.pickup-message", "<white>+{quantity} {item}")
+                        .replace("{quantity}", String.valueOf(quantity))
+                        .replace("{item}", itemName);
+                
                 Notifications.player(
                         playerRef,
-                        ChatUtil.parse(messages.getString("notifications.pickup-title", "<color:#22c55e>Item Picked Up")),
+                        ChatUtil.parse(pickupTitle),
                         ChatUtil.parse(pickupMessage),
                         null,
                         NotificationStyle.Success
@@ -44,8 +55,9 @@ public class NotificationHelper {
                 break;
 
             case "CHAT":
+                String chatPrefix = messages.getString("chat.prefix", "<color:#22c55e>[AutoPickup]");
                 String chatMessage = messages.getString("chat.pickup", "{prefix} <white>+{quantity} {item}")
-                        .replace("{prefix}", messages.getString("chat.prefix", "<color:#22c55e>[AutoPickup]"))
+                        .replace("{prefix}", chatPrefix)
                         .replace("{quantity}", String.valueOf(quantity))
                         .replace("{item}", itemName);
                 Messenger.sendMessage(playerRef, chatMessage);
@@ -70,7 +82,7 @@ public class NotificationHelper {
                     break;
 
                 case "NOTIFICATION":
-                    boolean isEnabled = title.contains("Enabled");
+                    boolean isEnabled = title.toLowerCase().contains("enabled");
                     Notifications.player(
                             playerRef,
                             ChatUtil.parse(title),
@@ -108,6 +120,20 @@ public class NotificationHelper {
             AutoPickupPlugin.LOGGER.atWarning().log("Failed to send no-permission notification: " + e.getMessage());
             Messenger.sendMessage(playerRef, title + " " + subtitle);
         }
+    }
+
+    public static void sendSafeChat(PlayerRef playerRef, String message) {
+        if (playerRef == null || !playerRef.isValid()) return;
+        Messenger.sendMessage(playerRef, message);
+    }
+
+    private static com.hypixel.hytale.server.core.entity.entities.Player getPlayer(PlayerRef playerRef) {
+        if (playerRef == null || !playerRef.isValid()) return null;
+        com.hypixel.hytale.component.Ref<com.hypixel.hytale.server.core.universe.world.storage.EntityStore> ref = playerRef.getReference();
+        if (ref == null || !ref.isValid()) return null;
+        com.hypixel.hytale.component.Store<com.hypixel.hytale.server.core.universe.world.storage.EntityStore> store = ref.getStore();
+        if (store == null) return null;
+        return store.getComponent(ref, com.hypixel.hytale.server.core.entity.entities.Player.getComponentType());
     }
 
 }

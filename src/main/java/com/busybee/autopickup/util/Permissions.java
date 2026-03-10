@@ -18,12 +18,6 @@ public final class Permissions {
         if (holder == null) {
             return defaultValue;
         }
-        if (holder instanceof com.hypixel.hytale.server.core.command.system.CommandSender sender) {
-            UUID uuid = sender.getUuid();
-            if (uuid != null) {
-                return hasPermission(uuid, permission, defaultValue);
-            }
-        }
         return holder.hasPermission(permission, defaultValue);
     }
 

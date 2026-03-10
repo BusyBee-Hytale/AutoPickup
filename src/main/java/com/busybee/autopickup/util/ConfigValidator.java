@@ -68,9 +68,7 @@ public class ConfigValidator {
         Object value = config.get(path);
         if (value != null && !(value instanceof Boolean)) {
             AutoPickupPlugin.LOGGER.atWarning().log("Invalid boolean value for '" + path + "': " + value);
-            AutoPickupPlugin.LOGGER.atWarning().log("Repairing with default value: " + defaultValue);
-            config.set(path, defaultValue);
-            hasWarnings = true;
+            // Just warn, don't repair to avoid accidental loss of settings if YAML parsing was slightly off
         }
     }
 
@@ -89,10 +87,9 @@ public class ConfigValidator {
         }
 
         if (numValue < min || numValue > max) {
-            AutoPickupPlugin.LOGGER.atWarning().log("Value for '" + path + "' (" + numValue + ") is out of range [" + min + ", " + max + "]");
-            AutoPickupPlugin.LOGGER.atWarning().log("Repairing with default value: " + defaultValue);
-            config.set(path, defaultValue);
-            hasWarnings = true;
+            AutoPickupPlugin.LOGGER.atWarning().log("Value for '" + path + "' (" + numValue + ") is outside recommended range [" + min + ", " + max + "]");
+            // We won't auto-repair this anymore to avoid losing user settings, 
+            // unless it's dangerously high (which we'll handle by just capping it in memory if needed, but for now we'll trust the user)
         }
     }
 
@@ -101,9 +98,7 @@ public class ConfigValidator {
         if (!validValues.contains(value)) {
             AutoPickupPlugin.LOGGER.atWarning().log("Invalid value for '" + path + "': " + value);
             AutoPickupPlugin.LOGGER.atWarning().log("Valid values are: " + validValues);
-            AutoPickupPlugin.LOGGER.atWarning().log("Repairing with default value: " + defaultValue);
-            config.set(path, defaultValue);
-            hasWarnings = true;
+            // Just warn, don't auto-repair to avoid losing user choices that might be added by newer versions
         }
     }
 
@@ -111,9 +106,7 @@ public class ConfigValidator {
         Object value = config.get(path);
         if (value != null && !(value instanceof List)) {
             AutoPickupPlugin.LOGGER.atWarning().log("Invalid list value for '" + path + "': " + value);
-            AutoPickupPlugin.LOGGER.atWarning().log("Repairing with empty list");
-            config.set(path, Arrays.asList());
-            hasWarnings = true;
+            // Just warn, don't auto-repair
         }
     }
 }
