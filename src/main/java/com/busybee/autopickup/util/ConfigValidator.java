@@ -3,6 +3,7 @@ package com.busybee.autopickup.util;
 import ai.kodari.hylib.config.YamlConfig;
 import com.busybee.autopickup.AutoPickupPlugin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class ConfigValidator {
         // Validate list configurations exist
         validateList(config, "autopickup.whitelist");
         validateList(config, "autopickup.blacklist");
-        validateList(config, "autopickup.tree-blocks");
+        validateTreeBlocks(config);
 
         // Validate whitelist/blacklist mutual exclusivity
         boolean whitelistEnabled = config.getBoolean("autopickup.whitelist-enabled", false);
@@ -107,6 +108,50 @@ public class ConfigValidator {
         if (value != null && !(value instanceof List)) {
             AutoPickupPlugin.LOGGER.atWarning().log("Invalid list value for '" + path + "': " + value);
             // Just warn, don't auto-repair
+        }
+    }
+
+    private void validateTreeBlocks(YamlConfig config) {
+        String path = "autopickup.tree-blocks";
+        Object value = config.get(path);
+        
+        List<String> requiredNewBlocks = Arrays.asList("Willow", "Cherry", "Redwood");
+        
+        if (value instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Object> currentList = new ArrayList<>((List<Object>) value);
+            boolean added = false;
+            
+            for (String newBlock : requiredNewBlocks) {
+                boolean exists = false;
+                for (Object item : currentList) {
+                    if (item != null && item.toString().equalsIgnoreCase(newBlock)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                
+                if (!exists) {
+                    currentList.add(newBlock);
+                    added = true;
+                }
+            }
+            
+            if (added) {
+                config.set(path, currentList);
+                hasWarnings = true;
+                AutoPickupPlugin.LOGGER.atInfo().log("Added missing tree types to configuration: Willow, Cherry, Redwood");
+            }
+        } else if (value == null) {
+            List<String> defaultBlocks = new ArrayList<>(Arrays.asList(
+                    "Log", "Leaf", "Leaves", "Branch", "Trunk", "Stump", "Wood", "Sapling",
+                    "Seed", "Fruit", "Apple", "Oak", "Birch", "Willow", "Spruce", "Pine",
+                    "Redwood", "Palm", "Acacia", "Thorntree", "Bamboo", "Cherry",
+                    "Frostwood", "Deadwood"
+            ));
+            config.set(path, defaultBlocks);
+            hasWarnings = true;
+            AutoPickupPlugin.LOGGER.atInfo().log("Created default tree-blocks configuration.");
         }
     }
 }

@@ -51,6 +51,13 @@ autopickup:
     - "Sapling"
     - "Seed"
     - "Wood"
+    - "Apple"
+    - "Camphor"
+    - "Spiral"
+    - "Frostwood"
+    - "Willow"
+    - "Cherry"
+    - "Redwood"
 
   # Disable autopickup when players are in creative mode
   disable-in-creative: true
