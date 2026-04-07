@@ -135,7 +135,7 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     public synchronized BreakEntry getRecentBreak(Vector3i position) {
         BreakEntry entry = recentBreaks.get(position);
         if (entry != null) {
-            long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
+            long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 5000L);
             if (System.currentTimeMillis() - entry.timestamp <= expiryTime) {
                 return entry;
             }
@@ -150,7 +150,7 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
 
     @Nullable
     public synchronized BreakEntry findNearbyBreak(Vector3i itemPos, int radius, boolean treeOnly) {
-        long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
+        long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 5000L);
         long now = System.currentTimeMillis();
 
         BreakEntry closestEntry = null;
@@ -187,7 +187,7 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     private synchronized void cleanupOldEntries() {
-        long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 500L);
+        long expiryTime = AutoPickupPlugin.getInstance().getConfig().getLong("autopickup.entry-expiry-ms", 5000L);
         long now = System.currentTimeMillis();
         recentBreaks.entrySet().removeIf(entry -> (now - entry.getValue().timestamp) > expiryTime);
     }
