@@ -7,7 +7,7 @@
 
     <groupId>com.busybee</groupId>
     <artifactId>AutoPickup</artifactId>
-    <version>2026.4.1</version>
+    <version>2026.4.2</version>
     <packaging>jar</packaging>
 
     <name>AutoPickup</name>
@@ -17,6 +17,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+
+        <!-- Dependency Versions -->
+        <hytale.version>2026.03.26-89796e57b</hytale.version>
+        <hylib.version>1.0.8</hylib.version>
+
+        <!-- Plugin Versions -->
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
     </properties>
 
     <repositories>
@@ -25,20 +33,25 @@
             <name>Kodari Repository</name>
             <url>https://repo.kodari.ai/releases/</url>
         </repository>
+        <repository>
+            <id>hytale-release</id>
+            <name>Hytale Repository</name>
+            <url>https://maven.hytale.com/release</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <!-- Hytale Server API -->
+        <dependency>
+            <groupId>com.hypixel.hytale</groupId>
+            <artifactId>Server</artifactId>
+            <version>${hytale.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>ai.kodari</groupId>
             <artifactId>HyLib</artifactId>
-            <version>1.0.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hypixel</groupId>
-            <artifactId>hytale-server</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/HytaleServer.jar</systemPath>
+            <version>${hylib.version}</version>
         </dependency>
     </dependencies>
 
@@ -54,7 +67,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <source>21</source>
                     <target>21</target>
@@ -64,7 +77,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>${maven-shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

@@ -1,7 +1,7 @@
 {
   "Group": "BusyBee",
   "Name": "AutoPickup",
-  "Version": "2026.4.1",
+  "Version": "2026.4.2",
   "Description": "Automatically picks up items when breaking blocks",
   "Authors": [
     {
