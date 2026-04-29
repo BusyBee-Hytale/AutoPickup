@@ -45,7 +45,9 @@ public class AutoPickupPlugin extends JavaPlugin {
         this.messages = new YamlConfig("messages.yml");
 
         ConfigValidator validator = new ConfigValidator(this);
-        validator.validateAndRepair();
+        if (validator.validateAndRepair()) {
+            this.config.save();
+        }
 
         this.pluginConfig = new PluginConfig(this);
 
@@ -53,7 +55,7 @@ public class AutoPickupPlugin extends JavaPlugin {
         this.databaseManager.initialize();
 
         boolean verboseLogging = this.config.getBoolean("hstats.verbose-logging", false);
-        new HStats("839433bf-1880-4752-84b8-64bda23d42ca", "2026.2.6", verboseLogging);
+        new HStats("0a41b5d9-5b69-4f4f-84d8-d5d27bf75b4a", "2026.4.3", verboseLogging);
         this.playerDataManager = new PlayerDataManager(this);
         this.breakBlockHandler = new BreakBlockHandler();
 
