@@ -53,7 +53,7 @@ public class PlayerDataManager {
         for (String playerKey : playerKeys) {
             try {
                 UUID uuid = UUID.fromString(playerKey);
-                if (enabledCache.containsKey(uuid)) continue; // Already in DB
+                if (enabledCache.containsKey(uuid)) continue;
 
                 boolean enabled = dataConfig.getBoolean("players." + playerKey + ".autopickup-enabled", false);
                 setAutoPickupEnabled(uuid, enabled);

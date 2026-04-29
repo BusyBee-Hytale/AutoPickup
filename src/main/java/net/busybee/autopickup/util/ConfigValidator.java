@@ -16,7 +16,7 @@ public class ConfigValidator {
         this.plugin = plugin;
     }
 
-    public void validateAndRepair() {
+    public boolean validateAndRepair() {
         YamlConfig config = plugin.getConfig();
         
         AutoPickupPlugin.LOGGER.atInfo().log("Validating configuration...");
@@ -62,6 +62,7 @@ public class ConfigValidator {
         } else {
             AutoPickupPlugin.LOGGER.atInfo().log("Configuration validation completed successfully.");
         }
+        return hasWarnings;
     }
 
     private void validateBoolean(YamlConfig config, String path, boolean defaultValue) {

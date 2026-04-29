@@ -3,6 +3,7 @@ package net.busybee.autopickup.database;
 import net.busybee.autopickup.AutoPickupPlugin;
 import net.busybee.autopickup.config.PluginConfig;
 import net.busybee.autopickup.database.entity.PlayerData;
+import org.sqlite.JDBC;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.DataSourceConnectionSource;
@@ -49,7 +50,7 @@ public class DatabaseManager {
                 }
                 File dbFile = new File(dataFolder, "database.db");
                 hikariConfig.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
-                hikariConfig.setDriverClassName("org.sqlite.JDBC");
+                hikariConfig.setDriverClassName(JDBC.class.getName());
             }
 
             hikariConfig.setMinimumIdle(2);
