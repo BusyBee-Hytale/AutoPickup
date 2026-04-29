@@ -2,6 +2,24 @@
 # AutoPickup Configuration
 # ====================================================
 
+# ====================================================
+# Database Settings
+# ====================================================
+
+database:
+  # Storage type: "sqlite", "mysql", or "mariadb"
+  type: "sqlite"
+
+  # MySQL/MariaDB specific settings
+  host: "localhost"
+  port: 3306
+  name: "autopickup"
+  user: "root"
+  password: ""
+
+  # Connection pool settings
+  pool-size: 10
+
 autopickup:
   # ====================================================
   # General Settings
