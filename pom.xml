@@ -129,12 +129,8 @@
                                     <shadedPattern>net.busybee.autopickup.libs.ormlite</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.mysql</pattern>
-                                    <shadedPattern>net.busybee.autopickup.libs.mysql</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.sqlite</pattern>
-                                    <shadedPattern>net.busybee.autopickup.libs.sqlite</shadedPattern>
+                                    <pattern>org.slf4j</pattern>
+                                    <shadedPattern>net.busybee.autopickup.libs.slf4j</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
