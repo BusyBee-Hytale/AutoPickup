@@ -7,20 +7,22 @@
 
     <groupId>net.busybee</groupId>
     <artifactId>AutoPickup</artifactId>
-    <version>2026.6.0</version>
+    <version>26.7.0</version>
     <packaging>jar</packaging>
 
     <name>AutoPickup</name>
-    <description>Automatic item pickup plugin for Hytale</description>
+    <description>Automatically picks up items when breaking blocks</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
 
         <!-- Dependency Versions -->
-        <hytale.version>2026.03.26-89796e57b</hytale.version>
+        <hytale.version>0.0.0-dev</hytale.version>
+        <hytale.manifest.version>2026.05.29-125f35f</hytale.manifest.version>
         <hylib.version>1.0.8</hylib.version>
+        <faststats.version>0.28.0</faststats.version>
 
         <!-- Database Versions -->
         <hikaricp.version>6.2.1</hikaricp.version>
@@ -29,11 +31,16 @@
         <sqlite-jdbc.version>3.46.0.0</sqlite-jdbc.version>
 
         <!-- Plugin Versions -->
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+        <maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
     </properties>
 
     <repositories>
+        <repository>
+            <id>faststats-releases</id>
+            <url>https://repo.faststats.dev/releases</url>
+        </repository>
         <repository>
             <id>kodari</id>
             <name>Kodari Repository</name>
@@ -87,13 +94,34 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>${sqlite-jdbc.version}</version>
         </dependency>
+
+        <!-- Caffeine Caching -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+        <!-- FastStats Metrics -->
+        <dependency>
+            <groupId>dev.faststats.metrics</groupId>
+            <artifactId>hytale</artifactId>
+            <version>${faststats.version}</version>
+        </dependency>
+
+        <!-- SLF4J Implementation for HikariCP -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>false</filtering>
+                <filtering>true</filtering>
             </resource>
         </resources>
 
@@ -103,8 +131,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <source>25</source>
+                    <target>25</target>
+                    <release>25</release>
                 </configuration>
             </plugin>
 
@@ -126,12 +155,32 @@
                                     <shadedPattern>net.busybee.autopickup.libs.hikari</shadedPattern>
                                 </relocation>
                                 <relocation>
+                                    <pattern>com.github.benmanes.caffeine</pattern>
+                                    <shadedPattern>net.busybee.autopickup.libs.caffeine</shadedPattern>
+                                </relocation>
+                                <relocation>
                                     <pattern>com.j256.ormlite</pattern>
                                     <shadedPattern>net.busybee.autopickup.libs.ormlite</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.slf4j</pattern>
                                     <shadedPattern>net.busybee.autopickup.libs.slf4j</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.sqlite</pattern>
+                                    <shadedPattern>net.busybee.autopickup.libs.sqlite</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.mysql</pattern>
+                                    <shadedPattern>net.busybee.autopickup.libs.mysql</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>dev.faststats</pattern>
+                                    <shadedPattern>net.busybee.autopickup.libs.faststats</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>ai.kodari.hylib</pattern>
+                                    <shadedPattern>net.busybee.autopickup.libs.hylib</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -149,6 +198,42 @@
                                 </filter>
                                 <filter>
                                     <artifact>com.j256.ormlite:*</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.github.ben-manes.caffeine:caffeine</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.slf4j:*</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.xerial:sqlite-jdbc</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.mysql:mysql-connector-j</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>dev.faststats.metrics:hytale</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>ai.kodari:HyLib</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
