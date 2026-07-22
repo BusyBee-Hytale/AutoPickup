@@ -37,7 +37,7 @@
     </properties>
 
     <repositories>
-        <repository>
+                <repository>
             <id>faststats-releases</id>
             <url>https://repo.faststats.dev/releases</url>
         </repository>
@@ -102,8 +102,7 @@
             <version>3.2.0</version>
         </dependency>
 
-        <!-- FastStats Metrics -->
-        <dependency>
+                <dependency>
             <groupId>dev.faststats.metrics</groupId>
             <artifactId>hytale</artifactId>
             <version>${faststats.version}</version>
@@ -166,7 +165,7 @@
                                     <pattern>org.slf4j</pattern>
                                     <shadedPattern>net.busybee.autopickup.libs.slf4j</shadedPattern>
                                 </relocation>
-                                <relocation>
+                                                                <relocation>
                                     <pattern>dev.faststats</pattern>
                                     <shadedPattern>net.busybee.autopickup.libs.faststats</shadedPattern>
                                 </relocation>
@@ -206,12 +205,7 @@
                                         <include>**</include>
                                     </includes>
                                 </filter>
-                                <filter>
-                                    <artifact>org.xerial:sqlite-jdbc</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
+                                
                                 <filter>
                                     <artifact>com.mysql:mysql-connector-j</artifact>
                                     <includes>
@@ -229,6 +223,22 @@
                                     <includes>
                                         <include>**</include>
                                     </includes>
+                                </filter>
+                                                            <filter>
+                                    <artifact>org.xerial:sqlite-jdbc</artifact>
+                                    <excludes>
+                                        <exclude>org/sqlite/native/FreeBSD/**</exclude>
+                                        <exclude>org/sqlite/native/OpenBSD/**</exclude>
+                                        <exclude>org/sqlite/native/SunOS/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/aarch64/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/arm/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/armv6/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/armv7/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/ppc64/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/mips64/**</exclude>
+                                        <exclude>org/sqlite/native/Linux/s390x/**</exclude>
+                                        <exclude>org/sqlite/native/Linux-musl/**</exclude>
+                                    </excludes>
                                 </filter>
                             </filters>
                             <createDependencyReducedPom>false</createDependencyReducedPom>

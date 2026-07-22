@@ -31,11 +31,8 @@ public class MetricsManager {
         AutoPickupPlugin.LOGGER.atInfo().log("This plugin uses FastStats and HStats to collect anonymous usage statistics.");
         AutoPickupPlugin.LOGGER.atInfo().log("No personal or identifying information is ever collected.");
         AutoPickupPlugin.LOGGER.atInfo().log("");
-        AutoPickupPlugin.LOGGER.atInfo().log("FastStats (faststats.dev):");
-        AutoPickupPlugin.LOGGER.atInfo().log("- To opt out, set 'enabled=false' in the metrics configuration file.");
-        AutoPickupPlugin.LOGGER.atInfo().log("");
         AutoPickupPlugin.LOGGER.atInfo().log("HStats (hstats.dev):");
-        AutoPickupPlugin.LOGGER.atInfo().log("- To opt out, set 'enabled=false' in hstats/hstats-server-uuid.txt.");
+        AutoPickupPlugin.LOGGER.atInfo().log("- To opt out, set 'enabled=false' in mods/AutoPickup/data/hstats");
         AutoPickupPlugin.LOGGER.atInfo().log("----------------------------------------------------------------------------");
     }
 
