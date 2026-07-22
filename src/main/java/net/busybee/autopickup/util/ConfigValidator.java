@@ -27,7 +27,6 @@ public class ConfigValidator {
         validateBoolean(config, "autopickup.tree-detection-enabled", true);
         validateBoolean(config, "autopickup.whitelist-enabled", false);
         validateBoolean(config, "autopickup.blacklist-enabled", false);
-        validateBoolean(config, "hstats.verbose-logging", false);
 
         validateIntRange(config, "autopickup.entry-expiry-ms", 5000L, 100L, 30000L);
         validateIntRange(config, "autopickup.pickup-radius", 5, 1, 20);

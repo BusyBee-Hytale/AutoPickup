@@ -5,6 +5,8 @@ import ai.kodari.hylib.config.YamlConfig;
 import net.busybee.autopickup.commands.AutoPickupCommand;
 import net.busybee.autopickup.config.PluginConfig;
 import net.busybee.autopickup.database.DatabaseManager;
+import net.busybee.autopickup.metrics.FastStatsManager;
+import net.busybee.autopickup.metrics.HStatsManager;
 import net.busybee.autopickup.manager.PlayerDataManager;
 import net.busybee.autopickup.systems.BreakBlockHandler;
 import net.busybee.autopickup.systems.ItemInterceptorSystem;
@@ -28,6 +30,8 @@ public class AutoPickupPlugin extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PlayerDataManager playerDataManager;
     private BreakBlockHandler breakBlockHandler;
+    private FastStatsManager fastStatsManager;
+    private HStatsManager hStatsManager;
 
     public AutoPickupPlugin(@Nonnull JavaPluginInit init) {
         super(init);
@@ -54,8 +58,12 @@ public class AutoPickupPlugin extends JavaPlugin {
         this.databaseManager = new DatabaseManager(this);
         this.databaseManager.initialize();
 
-        boolean verboseLogging = this.config.getBoolean("hstats.verbose-logging", false);
-        new HStats("0a41b5d9-5b69-4f4f-84d8-d5d27bf75b4a", "2026.4.3", verboseLogging);
+        this.fastStatsManager = new FastStatsManager(this);
+        this.fastStatsManager.init();
+
+        this.hStatsManager = new HStatsManager(this);
+        this.hStatsManager.init();
+
         this.playerDataManager = new PlayerDataManager(this);
         this.breakBlockHandler = new BreakBlockHandler();
 
@@ -75,6 +83,14 @@ public class AutoPickupPlugin extends JavaPlugin {
 
     @Override
     protected void shutdown() {
+        if (fastStatsManager != null) {
+            fastStatsManager.shutdown();
+        }
+
+        if (hStatsManager != null) {
+            hStatsManager.shutdown();
+        }
+
         if (playerDataManager != null) {
             playerDataManager.saveAllData();
         }

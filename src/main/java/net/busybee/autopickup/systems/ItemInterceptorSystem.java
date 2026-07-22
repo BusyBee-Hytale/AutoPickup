@@ -11,8 +11,8 @@ import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3i;
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
@@ -106,7 +106,7 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        if (!Permissions.canToggle(player)) {
+        if (!Permissions.canToggle(playerRef)) {
             return;
         }
 

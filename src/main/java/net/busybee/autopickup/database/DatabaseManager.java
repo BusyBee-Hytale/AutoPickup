@@ -14,6 +14,8 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 public class DatabaseManager {
@@ -22,6 +24,7 @@ public class DatabaseManager {
     private HikariDataSource dataSource;
     private ConnectionSource connectionSource;
     private Dao<PlayerData, String> playerDataDao;
+    private final ExecutorService virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
     public DatabaseManager(AutoPickupPlugin plugin) {
         this.plugin = plugin;
@@ -53,10 +56,11 @@ public class DatabaseManager {
                 hikariConfig.setDriverClassName(JDBC.class.getName());
             }
 
-            hikariConfig.setMinimumIdle(2);
-            hikariConfig.setIdleTimeout(300000);
-            hikariConfig.setMaxLifetime(600000);
-            hikariConfig.setConnectionTimeout(10000);
+            hikariConfig.setMinimumIdle(config.getDbPoolSize() / 2);
+            hikariConfig.setIdleTimeout(30000);
+            hikariConfig.setMaxLifetime(1800000);
+            hikariConfig.setConnectionTimeout(5000);
+            hikariConfig.setLeakDetectionThreshold(2000);
             hikariConfig.setMaximumPoolSize(config.getDbPoolSize());
             hikariConfig.setPoolName("AutoPickup-Pool");
 
@@ -78,6 +82,7 @@ public class DatabaseManager {
 
     public void shutdown() {
         try {
+            virtualThreadExecutor.shutdown();
             if (connectionSource != null) {
                 connectionSource.close();
             }
@@ -95,10 +100,10 @@ public class DatabaseManager {
     }
 
     public <T> CompletableFuture<T> supplyAsync(Supplier<T> supplier) {
-        return CompletableFuture.supplyAsync(supplier);
+        return CompletableFuture.supplyAsync(supplier, virtualThreadExecutor);
     }
 
     public CompletableFuture<Void> runAsync(Runnable runnable) {
-        return CompletableFuture.runAsync(runnable);
+        return CompletableFuture.runAsync(runnable, virtualThreadExecutor);
     }
 }

@@ -9,21 +9,20 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
-import com.hypixel.hytale.math.vector.Vector3i;
+import org.joml.Vector3i;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlockEvent> {
@@ -73,12 +72,15 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         }
     }
 
-    private final Map<Vector3i, BreakEntry> recentBreaks = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final Cache<Vector3i, BreakEntry> recentBreaks;
 
     public BreakBlockHandler() {
         super(BreakBlockEvent.class);
-        scheduler.scheduleAtFixedRate(this::cleanupOldEntries, 1, 1, TimeUnit.SECONDS);
+        long expiryTime = AutoPickupPlugin.getInstance().getPluginConfig().getEntryExpiryMs();
+        this.recentBreaks = Caffeine.newBuilder()
+                .expireAfterWrite(expiryTime, TimeUnit.MILLISECONDS)
+                .maximumSize(10000)
+                .build();
     }
 
     @Override
@@ -134,15 +136,8 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     @Nullable
-    public synchronized BreakEntry getRecentBreak(Vector3i position) {
-        BreakEntry entry = recentBreaks.get(position);
-        if (entry != null) {
-            long expiryTime = AutoPickupPlugin.getInstance().getPluginConfig().getEntryExpiryMs();
-            if (System.currentTimeMillis() - entry.timestamp <= expiryTime) {
-                return entry;
-            }
-        }
-        return null;
+    public BreakEntry getRecentBreak(Vector3i position) {
+        return recentBreaks.getIfPresent(position);
     }
 
     @Nullable
@@ -151,20 +146,14 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
     }
 
     @Nullable
-    public synchronized BreakEntry findNearbyBreak(Vector3i itemPos, int radius, boolean treeOnly) {
-        long expiryTime = AutoPickupPlugin.getInstance().getPluginConfig().getEntryExpiryMs();
-        long now = System.currentTimeMillis();
-
+    public BreakEntry findNearbyBreak(Vector3i itemPos, int radius, boolean treeOnly) {
         BreakEntry closestEntry = null;
         double closestDistanceSq = Double.MAX_VALUE;
+        double maxDistanceSq = (double) radius * radius;
 
-        for (Map.Entry<Vector3i, BreakEntry> entry : recentBreaks.entrySet()) {
+        for (Map.Entry<Vector3i, BreakEntry> entry : recentBreaks.asMap().entrySet()) {
             Vector3i breakPos = entry.getKey();
             BreakEntry breakEntry = entry.getValue();
-
-            if (now - breakEntry.timestamp > expiryTime) {
-                continue;
-            }
 
             if (treeOnly && !breakEntry.isTreeBlock()) {
                 continue;
@@ -173,9 +162,9 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
             int dx = itemPos.x - breakPos.x;
             int dy = itemPos.y - breakPos.y;
             int dz = itemPos.z - breakPos.z;
-            double distanceSq = dx * dx + dy * dy + dz * dz;
+            double distanceSq = (double) dx * dx + dy * dy + dz * dz;
 
-            if (distanceSq <= (double) radius * radius && distanceSq < closestDistanceSq) {
+            if (distanceSq <= maxDistanceSq && distanceSq < closestDistanceSq) {
                 closestEntry = breakEntry;
                 closestDistanceSq = distanceSq;
             }
@@ -184,24 +173,11 @@ public class BreakBlockHandler extends EntityEventSystem<EntityStore, BreakBlock
         return closestEntry;
     }
 
-    public synchronized void markMobDeath(Vector3i position, UUID playerUUID) {
+    public void markMobDeath(Vector3i position, UUID playerUUID) {
         recentBreaks.put(position, new BreakEntry(playerUUID, "MOB_DROP", true));
     }
 
-    private synchronized void cleanupOldEntries() {
-        long expiryTime = AutoPickupPlugin.getInstance().getPluginConfig().getEntryExpiryMs();
-        long now = System.currentTimeMillis();
-        recentBreaks.entrySet().removeIf(entry -> (now - entry.getValue().timestamp) > expiryTime);
-    }
-
     public void shutdown() {
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                scheduler.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
-        }
+        recentBreaks.invalidateAll();
     }
 }

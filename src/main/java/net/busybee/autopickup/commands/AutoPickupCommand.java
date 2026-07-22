@@ -32,7 +32,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
             @Nonnull PlayerRef playerRef,
             @Nonnull World world
     ) {
-        if (!Permissions.canToggle(ctx.sender())) {
+        if (!Permissions.canToggle(playerRef)) {
             NotificationHelper.sendNoPermissionNotification(
                 playerRef,
                 plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
@@ -91,7 +91,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
                 @Nonnull PlayerRef playerRef,
                 @Nonnull World world
         ) {
-            if (!Permissions.canReload(ctx.sender())) {
+            if (!Permissions.canReload(playerRef)) {
                 NotificationHelper.sendNoPermissionNotification(
                     playerRef,
                     plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
@@ -134,7 +134,7 @@ public class AutoPickupCommand extends AbstractPlayerCommand {
                 @Nonnull PlayerRef playerRef,
                 @Nonnull World world
         ) {
-            if (!Permissions.canViewSettings(ctx.sender())) {
+            if (!Permissions.canViewSettings(playerRef)) {
                 NotificationHelper.sendNoPermissionNotification(
                     playerRef,
                     plugin.getMessages().getString("titles.no-permission", "<color:#ff0000>No Permission"),
