@@ -5,8 +5,7 @@ import ai.kodari.hylib.config.YamlConfig;
 import net.busybee.autopickup.commands.AutoPickupCommand;
 import net.busybee.autopickup.config.PluginConfig;
 import net.busybee.autopickup.database.DatabaseManager;
-import net.busybee.autopickup.metrics.FastStatsManager;
-import net.busybee.autopickup.metrics.HStatsManager;
+import net.busybee.autopickup.metrics.MetricsManager;
 import net.busybee.autopickup.manager.PlayerDataManager;
 import net.busybee.autopickup.systems.BreakBlockHandler;
 import net.busybee.autopickup.systems.ItemInterceptorSystem;
@@ -30,8 +29,7 @@ public class AutoPickupPlugin extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PlayerDataManager playerDataManager;
     private BreakBlockHandler breakBlockHandler;
-    private FastStatsManager fastStatsManager;
-    private HStatsManager hStatsManager;
+    private MetricsManager metricsManager;
 
     public AutoPickupPlugin(@Nonnull JavaPluginInit init) {
         super(init);
@@ -58,11 +56,8 @@ public class AutoPickupPlugin extends JavaPlugin {
         this.databaseManager = new DatabaseManager(this);
         this.databaseManager.initialize();
 
-        this.fastStatsManager = new FastStatsManager(this);
-        this.fastStatsManager.init();
-
-        this.hStatsManager = new HStatsManager(this);
-        this.hStatsManager.init();
+        this.metricsManager = new MetricsManager(this);
+        this.metricsManager.init();
 
         this.playerDataManager = new PlayerDataManager(this);
         this.breakBlockHandler = new BreakBlockHandler();
@@ -83,12 +78,8 @@ public class AutoPickupPlugin extends JavaPlugin {
 
     @Override
     protected void shutdown() {
-        if (fastStatsManager != null) {
-            fastStatsManager.shutdown();
-        }
-
-        if (hStatsManager != null) {
-            hStatsManager.shutdown();
+        if (metricsManager != null) {
+            metricsManager.shutdown();
         }
 
         if (playerDataManager != null) {

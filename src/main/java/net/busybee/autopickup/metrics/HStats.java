@@ -26,13 +26,17 @@ public class HStats {
     private final String URL_BASE = "https://api.hstats.dev/api/";
     private final boolean DEBUG = false;
     private final String modUUID;
+    private final String reportingKey;
     private final String modVersion;
     private final String serverUUID;
+    private final Path dataFolder;
     private ScheduledFuture<?> task;
 
-    public HStats(String modUUID, String modVersion) {
+    public HStats(String modUUID, String reportingKey, String modVersion, Path dataFolder) {
         this.modUUID = modUUID;
+        this.reportingKey = reportingKey;
         this.modVersion = modVersion;
+        this.dataFolder = dataFolder;
 
         this.serverUUID = getServerUUID();
 
@@ -47,8 +51,8 @@ public class HStats {
         this.task = HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(this::logMetrics, 5, 5, TimeUnit.MINUTES);
     }
 
-    public HStats(String modUUID) {
-        this(modUUID, "Unknown");
+    public HStats(String modUUID, String reportingKey) {
+        this(modUUID, reportingKey, "Unknown", Paths.get(""));
     }
 
     public void shutdown() {
@@ -60,6 +64,7 @@ public class HStats {
     private void logMetrics() {
         Map<String, String> arguments = new HashMap<>();
         arguments.put("server_uuid", this.serverUUID);
+        arguments.put("reporting_key", this.reportingKey);
         arguments.put("players_online", String.valueOf(getOnlinePlayerCount()));
         arguments.put("os_name", System.getProperty("os.name"));
         arguments.put("os_version", System.getProperty("os.version"));
@@ -73,6 +78,7 @@ public class HStats {
         AutoPickupPlugin.LOGGER.atInfo().log("Adding mod to HStats server metrics...");
         Map<String, String> arguments = new HashMap<>();
         arguments.put("server_uuid", this.serverUUID);
+        arguments.put("reporting_key", this.reportingKey);
         arguments.put("plugin_uuid", this.modUUID);
         arguments.put("plugin_version", this.modVersion);
 
@@ -80,8 +86,12 @@ public class HStats {
     }
 
     private String getServerUUID() {
-        Path serverUUIDFile = Paths.get("hstats-server-uuid.txt");
         try {
+            Path folder = dataFolder.resolve("hstats");
+            if (!Files.exists(folder)) {
+                Files.createDirectories(folder);
+            }
+            Path serverUUIDFile = folder.resolve("hstats-server-uuid.txt");
             if (Files.exists(serverUUIDFile)) {
                 String content = Files.readString(serverUUIDFile);
                 content = content.trim();
@@ -92,7 +102,7 @@ public class HStats {
                 return lines[4];
             } else {
                 String uuid = UUID.randomUUID().toString();
-                Files.writeString(serverUUIDFile, HStatsManager.HSTATS_HEADER + uuid);
+                Files.writeString(serverUUIDFile, MetricsManager.HSTATS_HEADER + uuid);
                 return uuid;
             }
         } catch (IOException e) {
@@ -134,3 +144,4 @@ public class HStats {
         return Universe.get().getPlayerCount();
     }
 }
+
