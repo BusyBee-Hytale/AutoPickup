@@ -167,14 +167,6 @@
                                     <shadedPattern>net.busybee.autopickup.libs.slf4j</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.sqlite</pattern>
-                                    <shadedPattern>net.busybee.autopickup.libs.sqlite</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.mysql</pattern>
-                                    <shadedPattern>net.busybee.autopickup.libs.mysql</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>dev.faststats</pattern>
                                     <shadedPattern>net.busybee.autopickup.libs.faststats</shadedPattern>
                                 </relocation>
