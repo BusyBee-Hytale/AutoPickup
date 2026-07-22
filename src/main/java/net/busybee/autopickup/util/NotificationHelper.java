@@ -16,16 +16,7 @@ public class NotificationHelper {
         AutoPickupPlugin plugin = AutoPickupPlugin.getInstance();
         YamlConfig messages = plugin.getMessages();
 
-        String itemName = itemStack.getItemId();
-        try {
-            if (itemStack.getItem() != null && itemStack.getItem().getTranslationProperties() != null) {
-                String translatedName = itemStack.getItem().getTranslationProperties().getName();
-                if (translatedName != null && !translatedName.isEmpty()) {
-                    itemName = translatedName;
-                }
-            }
-        } catch (Exception ignored) {}
-
+        String itemName = getItemName(itemStack);
         int quantity = itemStack.getQuantity();
 
         switch (notificationType.toUpperCase()) {
@@ -124,6 +115,56 @@ public class NotificationHelper {
     public static void sendSafeChat(PlayerRef playerRef, String message) {
         if (playerRef == null || !playerRef.isValid()) return;
         Messenger.sendMessage(playerRef, message);
+    }
+
+    /**
+     * Gets a user-friendly name for an item stack.
+     * Prioritizes translation properties if they are already human-readable,
+     * otherwise formats the technical ID.
+     */
+    private static String getItemName(ItemStack itemStack) {
+        if (itemStack == null || ItemStack.isEmpty(itemStack)) return "Unknown Item";
+
+        try {
+            if (itemStack.getItem() != null && itemStack.getItem().getTranslationProperties() != null) {
+                String name = itemStack.getItem().getTranslationProperties().getName();
+                // If the name is already translated (doesn't look like a key), use it
+                if (name != null && !name.isEmpty() && !name.contains(".")) {
+                    return name;
+                }
+            }
+        } catch (Exception ignored) {}
+
+        return formatId(itemStack.getItemId());
+    }
+
+    /**
+     * Formats a technical ID (e.g., hytale:oak_log) into a human-readable name (e.g., Oak Log).
+     */
+    private static String formatId(String id) {
+        if (id == null || id.isEmpty()) return "Unknown";
+
+        String name = id;
+        if (name.contains(":")) {
+            name = name.substring(name.indexOf(":") + 1);
+        }
+
+        name = name.replace("_", " ").replace("-", " ");
+
+        StringBuilder result = new StringBuilder();
+        boolean capitalizeNext = true;
+        for (char c : name.toCharArray()) {
+            if (Character.isWhitespace(c)) {
+                capitalizeNext = true;
+                result.append(c);
+            } else if (capitalizeNext) {
+                result.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                result.append(Character.toLowerCase(c));
+            }
+        }
+        return result.toString();
     }
 
     private static Message createMessage(String input) {
