@@ -1,16 +1,15 @@
 package net.busybee.autopickup.systems;
 
+import java.util.concurrent.TimeUnit;
+
+import com.hypixel.hytale.component.*;
+import com.hypixel.hytale.component.system.RefSystem;
+import com.hypixel.hytale.server.core.universe.world.World;
 import net.busybee.autopickup.AutoPickupPlugin;
 import net.busybee.autopickup.config.PluginConfig;
 import net.busybee.autopickup.util.NotificationHelper;
 import net.busybee.autopickup.util.Permissions;
-import com.hypixel.hytale.component.AddReason;
-import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.RemoveReason;
-import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
-import com.hypixel.hytale.component.system.RefSystem;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 import com.hypixel.hytale.server.core.entity.entities.Player;
@@ -18,6 +17,10 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
+import com.hypixel.hytale.server.core.modules.entity.item.PickupItemComponent;
+import com.hypixel.hytale.server.core.modules.entity.item.PreventPickup;
+import com.hypixel.hytale.server.core.modules.entity.component.Interactable;
+import com.hypixel.hytale.server.core.modules.entity.component.PropComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -38,7 +41,14 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
     @Nonnull
     @Override
     public Query<EntityStore> getQuery() {
-        return Query.and(ItemComponent.getComponentType(), TransformComponent.getComponentType());
+        return Query.and(
+                ItemComponent.getComponentType(),
+                TransformComponent.getComponentType(),
+                Query.not(PickupItemComponent.getComponentType()),
+                Query.not(Interactable.getComponentType()),
+                Query.not(PreventPickup.getComponentType()),
+                Query.not(PropComponent.getComponentType())
+        );
     }
 
     @Override
@@ -52,20 +62,72 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
+        // Additional validation to ensure we don't intercept something that already has excluded components
+        if (commandBuffer.getComponent(ref, PickupItemComponent.getComponentType()) != null ||
+            commandBuffer.getComponent(ref, Interactable.getComponentType()) != null ||
+            commandBuffer.getComponent(ref, PreventPickup.getComponentType()) != null ||
+            commandBuffer.getComponent(ref, PropComponent.getComponentType()) != null) {
+            return;
+        }
+
         if (!processedItems.add(ref)) {
             return;
         }
+
+        int delayTicks = plugin.getPluginConfig().getPickupDelayTicks();
+        if (delayTicks <= 0) {
+            processPickup(ref, store, commandBuffer);
+        } else {
+            World world = store.getExternalData().getWorld();
+            world.scheduleAfter(() -> {
+                processPickup(ref, store, null);
+            }, (long) delayTicks * 50, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void processPickup(Ref<EntityStore> ref, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
+        if (!ref.isValid()) {
+            return;
+        }
+
 
         if (!plugin.getConfig().getBoolean("autopickup.enabled", true)) {
             return;
         }
 
-        TransformComponent transform = commandBuffer.getComponent(ref, TransformComponent.getComponentType());
+        // Late-binding validation for excluded components (important for delayed pickup)
+        ItemComponent itemComponent = commandBuffer != null
+                ? commandBuffer.getComponent(ref, ItemComponent.getComponentType())
+                : store.getComponent(ref, ItemComponent.getComponentType());
+        
+        if (itemComponent == null || itemComponent.isRemovedByPlayerPickup()) {
+            return;
+        }
+
+        if (commandBuffer != null) {
+            if (commandBuffer.getComponent(ref, PickupItemComponent.getComponentType()) != null ||
+                commandBuffer.getComponent(ref, Interactable.getComponentType()) != null ||
+                commandBuffer.getComponent(ref, PreventPickup.getComponentType()) != null ||
+                commandBuffer.getComponent(ref, PropComponent.getComponentType()) != null) {
+                return;
+            }
+        } else {
+            if (store.getComponent(ref, PickupItemComponent.getComponentType()) != null ||
+                store.getComponent(ref, Interactable.getComponentType()) != null ||
+                store.getComponent(ref, PreventPickup.getComponentType()) != null ||
+                store.getComponent(ref, PropComponent.getComponentType()) != null) {
+                return;
+            }
+        }
+
+        TransformComponent transform = commandBuffer != null 
+                ? commandBuffer.getComponent(ref, TransformComponent.getComponentType())
+                : store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
             return;
         }
 
-        Vector3d position = transform.getPosition();
+        Vector3d position = new Vector3d(transform.getPosition());
         Vector3i blockPos = new Vector3i(
                 (int) Math.floor(position.x),
                 (int) Math.floor(position.y),
@@ -86,11 +148,6 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        ItemComponent itemComponent = commandBuffer.getComponent(ref, ItemComponent.getComponentType());
-        if (itemComponent == null) {
-            return;
-        }
-
         ItemStack itemStack = itemComponent.getItemStack();
         if (ItemStack.isEmpty(itemStack)) {
             return;
@@ -101,7 +158,7 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        Player player = getPlayerEntity(playerRef, store);
+        Player player = getPlayerEntity(playerRef, store, commandBuffer);
         if (player == null) {
             return;
         }
@@ -121,9 +178,25 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
                 .getCombinedHotbarFirst()
                 .addItemStack(itemStack);
 
+
         ItemStack remainder = transaction.getRemainder();
         if (ItemStack.isEmpty(remainder)) {
-            commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
+            
+            // Clear the stack immediately to prevent other systems from picking it up
+            itemComponent.setItemStack(ItemStack.EMPTY);
+            itemComponent.setRemovedByPlayerPickup(true);
+            
+            if (commandBuffer != null) {
+                // Follow Hytale's pattern: remove original and spawn new animation entity
+                commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
+                com.hypixel.hytale.component.Holder<EntityStore> animHolder = ItemComponent.generatePickedUpItem(itemStack, position, commandBuffer, playerRef.getReference());
+                commandBuffer.addEntity(animHolder, AddReason.SPAWN);
+            } else {
+                store.removeEntity(ref, RemoveReason.REMOVE);
+                com.hypixel.hytale.component.Holder<EntityStore> animHolder = ItemComponent.generatePickedUpItem(itemStack, position, store, playerRef.getReference());
+                store.addEntity(animHolder, AddReason.SPAWN);
+            }
+            
             String notificationType = config.getNotificationType();
             NotificationHelper.sendPickupNotification(playerRef, notificationType, itemStack);
 
@@ -132,6 +205,19 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
 
             int pickedUpQuantity = itemStack.getQuantity() - remainder.getQuantity();
             ItemStack pickedUp = itemStack.withQuantity(pickedUpQuantity);
+            
+            if (commandBuffer != null) {
+                com.hypixel.hytale.component.Holder<EntityStore> animHolder = ItemComponent.generatePickedUpItem(
+                    pickedUp, position, commandBuffer, playerRef.getReference()
+                );
+                commandBuffer.addEntity(animHolder, AddReason.SPAWN);
+            } else {
+                com.hypixel.hytale.component.Holder<EntityStore> animHolder = ItemComponent.generatePickedUpItem(
+                    pickedUp, position, store, playerRef.getReference()
+                );
+                store.addEntity(animHolder, AddReason.SPAWN);
+            }
+
             String notificationType = config.getNotificationType();
             NotificationHelper.sendPickupNotification(playerRef, notificationType, pickedUp);
         }
@@ -147,7 +233,7 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
         processedItems.remove(ref);
     }
 
-    private Player getPlayerEntity(PlayerRef playerRef, Store<EntityStore> store) {
+    private Player getPlayerEntity(PlayerRef playerRef, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer) {
         if (!playerRef.isValid()) {
             return null;
         }
@@ -166,7 +252,9 @@ public class ItemInterceptorSystem extends RefSystem<EntityStore> {
             return null;
         }
 
-        return refStore.getComponent(playerEntityRef, Player.getComponentType());
+        return commandBuffer != null
+                ? commandBuffer.getComponent(playerEntityRef, Player.getComponentType())
+                : refStore.getComponent(playerEntityRef, Player.getComponentType());
     }
 
     private boolean shouldPickup(String blockId) {

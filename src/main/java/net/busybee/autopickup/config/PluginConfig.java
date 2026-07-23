@@ -14,6 +14,7 @@ public class PluginConfig {
     private List<String> treeBlocks;
     private int pickupRadius;
     private int treePickupRadius;
+    private int pickupDelayTicks;
     private boolean disableInCreative;
     private String notificationType;
     private boolean defaultEnabled;
@@ -43,6 +44,7 @@ public class PluginConfig {
         treeBlocks = config.getStringList("autopickup.tree-blocks");
         pickupRadius = config.getInt("autopickup.pickup-radius", 3);
         treePickupRadius = config.getInt("autopickup.tree-pickup-radius", 5);
+        pickupDelayTicks = config.getInt("autopickup.pickup-delay-ticks", 0);
         disableInCreative = config.getBoolean("autopickup.disable-in-creative", true);
         notificationType = config.getString("autopickup.notification-type", "NOTIFICATION");
         defaultEnabled = config.getBoolean("autopickup.default-enabled", false);
@@ -66,6 +68,7 @@ public class PluginConfig {
     public List<String> getTreeBlocks() { return treeBlocks; }
     public int getPickupRadius() { return pickupRadius; }
     public int getTreePickupRadius() { return treePickupRadius; }
+    public int getPickupDelayTicks() { return pickupDelayTicks; }
     public boolean isDisableInCreative() { return disableInCreative; }
     public String getNotificationType() { return notificationType; }
     public boolean isDefaultEnabled() { return defaultEnabled; }

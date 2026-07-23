@@ -1,12 +1,8 @@
 package net.busybee.autopickup.systems;
 
+import com.hypixel.hytale.component.*;
 import net.busybee.autopickup.AutoPickupPlugin;
 import net.busybee.autopickup.config.PluginConfig;
-import com.hypixel.hytale.component.Archetype;
-import com.hypixel.hytale.component.ArchetypeChunk;
-import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import org.joml.Vector3i;

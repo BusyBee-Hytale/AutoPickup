@@ -1,7 +1,7 @@
 package net.busybee.autopickup;
 
-import ai.kodari.hylib.commons.scheduler.Scheduler;
 import ai.kodari.hylib.config.YamlConfig;
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import net.busybee.autopickup.commands.AutoPickupCommand;
 import net.busybee.autopickup.config.PluginConfig;
 import net.busybee.autopickup.database.DatabaseManager;
@@ -12,7 +12,6 @@ import net.busybee.autopickup.systems.ItemInterceptorSystem;
 import net.busybee.autopickup.systems.MobDropListener;
 import net.busybee.autopickup.util.ConfigValidator;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import javax.annotation.Nonnull;
@@ -93,8 +92,6 @@ public class AutoPickupPlugin extends JavaPlugin {
         if (breakBlockHandler != null) {
             breakBlockHandler.shutdown();
         }
-
-        Scheduler.shutdown();
     }
 
     public YamlConfig getConfig() {
